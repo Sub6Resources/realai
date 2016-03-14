@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NLP</string>
+    <string name="action_settings">Settings</string>
+    <string name="enter_button">Enter</string>
+    <string name="erase_memory">Erase Memory</string>
+    <string name="exit_app">Exit</string>
+    <item name="activityRoot" type="id"/>
+    <string name="history_log">History</string>
+    <string name="thought_log">Thoughts</string>
+    <string name="menu_button">Menu</string>
+    <string name="word_fix">Word Fix</string>
+    <string name="btn_accept">Accept</string>
+
+</resources>

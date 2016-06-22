@@ -57,7 +57,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);        
         setContentView(R.layout.activity_main);
 
         handler = new Handler();

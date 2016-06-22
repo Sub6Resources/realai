@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">NLP</string>
+    <string name="app_name">Real AI (text)</string>
     <string name="action_settings">Settings</string>
     <string name="enter_button">Enter</string>
     <string name="erase_memory">Erase Memory</string>

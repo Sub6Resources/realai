@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -57,7 +58,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     @Override
     protected void onCreate(Bundle savedInstanceState) 
     {
-        super.onCreate(savedInstanceState);        
+        super.onCreate(savedInstanceState);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
 
         handler = new Handler();

@@ -180,7 +180,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     	}
     	else
     	{
-    		Acknowledge();
+    		Acknowledge_Exit();
     	}
     }
 
@@ -366,8 +366,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         dlgAlert.create().show();
     }
     
-    //Yes/No Box
-    public void Acknowledge()
+    //Yes/No Box for Exit
+    public void Acknowledge_Exit()
     {
     	stopTimer();
     	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -385,6 +385,32 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     	};
     	AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
         dlgAlert.setMessage("Exit the NLP Program?");
+        dlgAlert.setTitle("System Message");
+        dlgAlert.setNegativeButton("No", dialogClickListener);
+        dlgAlert.setPositiveButton("Yes", dialogClickListener);
+        dlgAlert.setCancelable(false);
+        dlgAlert.create().show();
+    }
+    
+    //Yes/No Box for Erase
+    public void Acknowledge_Erase()
+    {
+    	stopTimer();
+    	DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+    	    @Override
+    	    public void onClick(DialogInterface dialog, int which) {
+    	        switch (which){
+    	        case DialogInterface.BUTTON_POSITIVE:
+    	        	EraseMemory(Brain_dir);
+    	            break;
+    	        case DialogInterface.BUTTON_NEGATIVE:
+    	        	startTimer();
+    	            break;
+    	        }
+    	    }
+    	};
+    	AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+        dlgAlert.setMessage("Erase all memory?");
         dlgAlert.setTitle("System Message");
         dlgAlert.setNegativeButton("No", dialogClickListener);
         dlgAlert.setPositiveButton("Yes", dialogClickListener);
@@ -412,80 +438,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         switch (item.getItemId()) 
         {
             case R.id.exit_app:
-            	Acknowledge();
+            	Acknowledge_Exit();
             	return true;
             case R.id.erase_memory:
-                EraseMemory(Brain_dir);
-                
-                if (!Brain_dir.exists())
-                {
-                	Brain_dir.mkdirs(); 
-                }
-                
-                File file = new File(Brain_dir, "Words.txt");
-            	if (!file.exists())
-                {    
-            		try
-            		{
-        				file.createNewFile();
-        			}
-            		catch (IOException e)
-            		{
-        				e.printStackTrace();
-        			}
-                }
-            	
-            	file = new File(Brain_dir, "InputList.txt");
-            	if (!file.exists())
-                {    
-            		try
-            		{
-        				file.createNewFile();
-        			}
-            		catch (IOException e)
-            		{
-        				e.printStackTrace();
-        			}
-                }
-                
-                DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-            	String currentDate = f.format(new Date());
-            	
-                file = new File(History_dir, currentDate + ".txt");
-                if (!History_dir.exists())
-                {
-                	History_dir.mkdirs();
-	            	if (!file.exists())
-	                {
-	            		try
-	            		{
-	        				file.createNewFile();
-	        			}
-	            		catch (IOException e)
-	            		{
-	        				e.printStackTrace();
-	        			}
-	                }
-                }
-                
-                file = new File(Thought_dir, currentDate + ".txt");
-                if (!Thought_dir.exists())
-                {
-                	Thought_dir.mkdirs();
-	            	if (!file.exists())
-	                {
-	            		try
-	            		{
-	        				file.createNewFile();
-	        			}
-	            		catch (IOException e)
-	            		{
-	        				e.printStackTrace();
-	        			}
-	                }
-                }
-                
-                PopUp("Memory has been erased.");
+            	Acknowledge_Erase();
                 return true;
             case R.id.thought_log:
                 Data.getThoughts();
@@ -547,6 +503,76 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         
     	Output.setText(String.format("",Output));
     	Input.setText(String.format("",Input));
+    	
+    	if (!Brain_dir.exists())
+        {
+        	Brain_dir.mkdirs(); 
+        }
+        
+        File file = new File(Brain_dir, "Words.txt");
+    	if (!file.exists())
+        {    
+    		try
+    		{
+				file.createNewFile();
+			}
+    		catch (IOException e)
+    		{
+				e.printStackTrace();
+			}
+        }
+    	
+    	file = new File(Brain_dir, "InputList.txt");
+    	if (!file.exists())
+        {    
+    		try
+    		{
+				file.createNewFile();
+			}
+    		catch (IOException e)
+    		{
+				e.printStackTrace();
+			}
+        }
+        
+        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+    	String currentDate = f.format(new Date());
+    	
+        file = new File(History_dir, currentDate + ".txt");
+        if (!History_dir.exists())
+        {
+        	History_dir.mkdirs();
+        	if (!file.exists())
+            {
+        		try
+        		{
+    				file.createNewFile();
+    			}
+        		catch (IOException e)
+        		{
+    				e.printStackTrace();
+    			}
+            }
+        }
+        
+        file = new File(Thought_dir, currentDate + ".txt");
+        if (!Thought_dir.exists())
+        {
+        	Thought_dir.mkdirs();
+        	if (!file.exists())
+            {
+        		try
+        		{
+    				file.createNewFile();
+    			}
+        		catch (IOException e)
+        		{
+    				e.printStackTrace();
+    			}
+            }
+        }
+        
+        PopUp("Memory has been erased.");
     }
     
     private void CleanMemory()

@@ -402,6 +402,79 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     	        switch (which){
     	        case DialogInterface.BUTTON_POSITIVE:
     	        	EraseMemory(Brain_dir);
+    	        	
+    	        	Output.setText(String.format("",Output));
+    	        	Input.setText(String.format("",Input));
+    	        	
+    	        	if (!Brain_dir.exists())
+    	            {
+    	            	Brain_dir.mkdirs(); 
+    	            }
+    	            
+    	            File file = new File(Brain_dir, "Words.txt");
+    	        	if (!file.exists())
+    	            {    
+    	        		try
+    	        		{
+    	    				file.createNewFile();
+    	    			}
+    	        		catch (IOException e)
+    	        		{
+    	    				e.printStackTrace();
+    	    			}
+    	            }
+    	        	
+    	        	file = new File(Brain_dir, "InputList.txt");
+    	        	if (!file.exists())
+    	            {    
+    	        		try
+    	        		{
+    	    				file.createNewFile();
+    	    			}
+    	        		catch (IOException e)
+    	        		{
+    	    				e.printStackTrace();
+    	    			}
+    	            }
+    	            
+    	            DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+    	        	String currentDate = f.format(new Date());
+    	        	
+    	            file = new File(History_dir, currentDate + ".txt");
+    	            if (!History_dir.exists())
+    	            {
+    	            	History_dir.mkdirs();
+    	            	if (!file.exists())
+    	                {
+    	            		try
+    	            		{
+    	        				file.createNewFile();
+    	        			}
+    	            		catch (IOException e)
+    	            		{
+    	        				e.printStackTrace();
+    	        			}
+    	                }
+    	            }
+    	            
+    	            file = new File(Thought_dir, currentDate + ".txt");
+    	            if (!Thought_dir.exists())
+    	            {
+    	            	Thought_dir.mkdirs();
+    	            	if (!file.exists())
+    	                {
+    	            		try
+    	            		{
+    	        				file.createNewFile();
+    	        			}
+    	            		catch (IOException e)
+    	            		{
+    	        				e.printStackTrace();
+    	        			}
+    	                }
+    	            }
+    	            
+    	            PopUp("Memory has been erased.");
     	            break;
     	        case DialogInterface.BUTTON_NEGATIVE:
     	        	startTimer();
@@ -500,79 +573,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         	}
         }
         fileOrDirectory.delete();
-        
-    	Output.setText(String.format("",Output));
-    	Input.setText(String.format("",Input));
-    	
-    	if (!Brain_dir.exists())
-        {
-        	Brain_dir.mkdirs(); 
-        }
-        
-        File file = new File(Brain_dir, "Words.txt");
-    	if (!file.exists())
-        {    
-    		try
-    		{
-				file.createNewFile();
-			}
-    		catch (IOException e)
-    		{
-				e.printStackTrace();
-			}
-        }
-    	
-    	file = new File(Brain_dir, "InputList.txt");
-    	if (!file.exists())
-        {    
-    		try
-    		{
-				file.createNewFile();
-			}
-    		catch (IOException e)
-    		{
-				e.printStackTrace();
-			}
-        }
-        
-        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-    	String currentDate = f.format(new Date());
-    	
-        file = new File(History_dir, currentDate + ".txt");
-        if (!History_dir.exists())
-        {
-        	History_dir.mkdirs();
-        	if (!file.exists())
-            {
-        		try
-        		{
-    				file.createNewFile();
-    			}
-        		catch (IOException e)
-        		{
-    				e.printStackTrace();
-    			}
-            }
-        }
-        
-        file = new File(Thought_dir, currentDate + ".txt");
-        if (!Thought_dir.exists())
-        {
-        	Thought_dir.mkdirs();
-        	if (!file.exists())
-            {
-        		try
-        		{
-    				file.createNewFile();
-    			}
-        		catch (IOException e)
-        		{
-    				e.printStackTrace();
-    			}
-            }
-        }
-        
-        PopUp("Memory has been erased.");
     }
     
     private void CleanMemory()

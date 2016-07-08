@@ -15,7 +15,6 @@
         android:id="@+id/txt_Output"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/txt_Input"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
@@ -31,7 +30,8 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarStyle="insideInset"
         android:scrollbars="vertical"
-        android:selectAllOnFocus="false" >
+        android:selectAllOnFocus="false"
+        android:height="280dp">
 
         <requestFocus />
     </EditText>
@@ -41,30 +41,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/btn_Enter"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentBottom="false"
         android:layout_alignRight="@+id/txt_Input"
         android:onClick="onMenu"
-        android:text="@string/menu_button" />
+        android:text="@string/menu_button"
+        android:layout_below="@+id/btn_Enter" />
 
     <Button
         android:id="@+id/btn_Enter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_Menu"
         android:layout_alignLeft="@+id/txt_Input"
         android:layout_alignRight="@+id/txt_Input"
         android:onClick="onSend"
-        android:text="@string/enter_button" />
+        android:text="@string/enter_button"
+        android:layout_below="@+id/txt_Input" />
 
     <EditText
         android:id="@+id/txt_Input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_Enter"
         android:layout_alignLeft="@+id/txt_Output"
         android:layout_alignParentRight="true"
         android:ems="10"
-        android:inputType="text" />
+        android:inputType="text"
+        android:layout_below="@+id/txt_Output" />
 
     <EditText
         android:id="@+id/txt_WordFix"

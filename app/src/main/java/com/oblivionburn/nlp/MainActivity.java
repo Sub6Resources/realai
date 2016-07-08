@@ -26,10 +26,15 @@ import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -60,7 +65,13 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     public static final File History_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/History/" );
     public static final File Thought_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/Thoughts/" );
     private Handler handler;
+    private boolean MenuOpen;
 
+    public float ScreenHeight;
+    public float ScreenWidth;
+    public int ObjectHeight;
+    private static Context context;
+    private View rootView;
     private final int PERMISSION_REQUEST = 123;
 
     @Override
@@ -69,18 +80,32 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         super.onCreate(savedInstanceState);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+        MainActivity.context = getApplicationContext();
 
-        handler = new Handler();
+        Display display = getWindowManager().getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+        float density  = getResources().getDisplayMetrics().density;
+        ScreenHeight = outMetrics.heightPixels / density;
+        ScreenWidth  = outMetrics.widthPixels / density;
+
+        Input = (EditText)findViewById(R.id.txt_Input);
+        float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
+        ObjectHeight = (int)(Input.getTextSize() / scaledDensity);
 
         Output = (EditText)findViewById(R.id.txt_Output);
         Output.setMaxLines(Integer.MAX_VALUE);
+        ViewGroup.LayoutParams params = Output.getLayoutParams();
+        params.height = (int)ScreenHeight - (ObjectHeight * 12);
+        Output.setLayoutParams(params);
 
-        Input = (EditText)findViewById(R.id.txt_Input);
         btn_Enter = (Button)findViewById(R.id.btn_Enter);
         sp_WordFix = (Spinner)findViewById(R.id.sp_WordFix);
         sp_WordFix.setOnItemSelectedListener(this);
         txt_WordFix = (EditText)findViewById(R.id.txt_WordFix);
         btn_WordFix = (Button)findViewById(R.id.btn_WordFix);
+
+        handler = new Handler();
 
         if (!Brain_dir.exists())
         {
@@ -157,13 +182,40 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
             }
         });
-        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 
+        rootView = findViewById(android.R.id.content);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+        {
+            @Override
+            public void onGlobalLayout()
+            {
+                int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
+                if (heightDiff > dpToPx(MainActivity.context, 200))
+                {
+                    ViewGroup.LayoutParams params = Output.getLayoutParams();
+                    params.height = (int)ScreenHeight - (ObjectHeight * 32);
+                    Output.setLayoutParams(params);
+                }
+                else if (!MenuOpen)
+                {
+                    ViewGroup.LayoutParams params = Output.getLayoutParams();
+                    params.height = (int)ScreenHeight - (ObjectHeight * 12);
+                    Output.setLayoutParams(params);
+                }
+            }
+        });
+
+        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentapiVersion > Build.VERSION_CODES.LOLLIPOP)
         {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, PERMISSION_REQUEST);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST);
+            }
+            else
+            {
+                bl_Ready = true;
+                startTimer();
             }
         }
         else
@@ -520,6 +572,26 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     }
 
     @Override
+    public boolean onMenuOpened(int featureId, Menu menu)
+    {
+        ViewGroup.LayoutParams params = Output.getLayoutParams();
+        params.height = (int)ScreenHeight - (ObjectHeight * 22);
+        Output.setLayoutParams(params);
+        MenuOpen = true;
+
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public void onPanelClosed(int featureId, Menu menu)
+    {
+        ViewGroup.LayoutParams params = Output.getLayoutParams();
+        params.height = (int)ScreenHeight - (ObjectHeight * 12);
+        Output.setLayoutParams(params);
+        MenuOpen = false;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
@@ -828,5 +900,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
         btn_Enter.setClickable(true);
         startTimer();
+    }
+
+    public static float dpToPx(Context context, float valueInDp)
+    {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, valueInDp, metrics);
     }
 }

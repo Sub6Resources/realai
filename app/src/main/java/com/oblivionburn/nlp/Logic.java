@@ -21,14 +21,11 @@ class Logic
 
     public static void prepInput()
     {
-        if (!str_Input.equals(""))
-        {
-            prepInput_CreateWordArray();
-            prepInput_UpdateExistingFrequencies();
-            prepInput_AddNewWords();
-            prepInput_UpdatePreWords();
-            prepInput_UpdateProWords();
-        }
+        prepInput_CreateWordArray();
+        prepInput_UpdateExistingFrequencies();
+        prepInput_AddNewWords();
+        prepInput_UpdatePreWords();
+        prepInput_UpdateProWords();
     }
 
     private static void prepInput_CreateWordArray()

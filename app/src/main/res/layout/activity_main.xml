@@ -22,7 +22,6 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:freezesText="false"
-        android:gravity="bottom"
         android:inputType="textMultiLine"
         android:linksClickable="false"
         android:longClickable="false"
@@ -31,7 +30,8 @@
         android:scrollbarStyle="insideInset"
         android:scrollbars="vertical"
         android:selectAllOnFocus="false"
-        android:height="280dp">
+        android:layout_above="@+id/txt_Input"
+        android:gravity="top">
 
         <requestFocus />
     </EditText>
@@ -41,11 +41,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/btn_Enter"
-        android:layout_alignParentBottom="false"
+        android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/txt_Input"
         android:onClick="onMenu"
         android:text="@string/menu_button"
-        android:layout_below="@+id/btn_Enter" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
 
     <Button
         android:id="@+id/btn_Enter"
@@ -55,7 +56,7 @@
         android:layout_alignRight="@+id/txt_Input"
         android:onClick="onSend"
         android:text="@string/enter_button"
-        android:layout_below="@+id/txt_Input" />
+        android:layout_above="@+id/btn_Menu" />
 
     <EditText
         android:id="@+id/txt_Input"
@@ -65,7 +66,10 @@
         android:layout_alignParentRight="true"
         android:ems="10"
         android:inputType="text"
-        android:layout_below="@+id/txt_Output" />
+        android:layout_above="@+id/btn_Enter"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/txt_Output"
+        android:singleLine="false" />
 
     <EditText
         android:id="@+id/txt_WordFix"

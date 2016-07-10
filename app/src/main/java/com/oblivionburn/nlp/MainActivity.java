@@ -56,6 +56,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Spinner sp_WordFix = null;
     private Button btn_WordFix = null;
     private Button btn_Enter = null;
+    private Button btn_Menu = null;
     private Boolean bl_Typing = false;
     private Boolean bl_Ready = false;
     private Boolean bl_History = false;
@@ -65,11 +66,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     public static final File History_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/History/" );
     public static final File Thought_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/Thoughts/" );
     private Handler handler;
-    private boolean MenuOpen;
-
-    public float ScreenHeight;
-    public float ScreenWidth;
-    public int ObjectHeight;
+    private boolean KeyboardOpen;
     private static Context context;
     private View rootView;
     private final int PERMISSION_REQUEST = 123;
@@ -82,24 +79,13 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         setContentView(R.layout.activity_main);
         MainActivity.context = getApplicationContext();
 
-        Display display = getWindowManager().getDefaultDisplay();
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-        float density  = getResources().getDisplayMetrics().density;
-        ScreenHeight = outMetrics.heightPixels / density;
-        ScreenWidth  = outMetrics.widthPixels / density;
-
         Input = (EditText)findViewById(R.id.txt_Input);
-        float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
-        ObjectHeight = (int)(Input.getTextSize() / scaledDensity);
 
         Output = (EditText)findViewById(R.id.txt_Output);
         Output.setMaxLines(Integer.MAX_VALUE);
-        ViewGroup.LayoutParams params = Output.getLayoutParams();
-        params.height = (int)ScreenHeight - (ObjectHeight * 12);
-        Output.setLayoutParams(params);
 
         btn_Enter = (Button)findViewById(R.id.btn_Enter);
+        btn_Menu = (Button)findViewById(R.id.btn_Menu);
         sp_WordFix = (Spinner)findViewById(R.id.sp_WordFix);
         sp_WordFix.setOnItemSelectedListener(this);
         txt_WordFix = (EditText)findViewById(R.id.txt_WordFix);
@@ -192,15 +178,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
                 if (heightDiff > dpToPx(MainActivity.context, 200))
                 {
-                    ViewGroup.LayoutParams params = Output.getLayoutParams();
-                    params.height = (int)ScreenHeight - (ObjectHeight * 32);
-                    Output.setLayoutParams(params);
+                    KeyboardOpen = true;
                 }
-                else if (!MenuOpen)
+                else
                 {
-                    ViewGroup.LayoutParams params = Output.getLayoutParams();
-                    params.height = (int)ScreenHeight - (ObjectHeight * 12);
-                    Output.setLayoutParams(params);
+                    KeyboardOpen = false;
                 }
             }
         });
@@ -309,7 +291,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
     private void AttentionSpan()
     {
-        if (bl_Typing)
+        if (!bl_Typing)
         {
             Random random = new Random();
             int int_choice = random.nextInt(100);
@@ -322,6 +304,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
 
                 Output.setText(R.string.thinking);
+                Output.scrollTo(0, 0);
                 Logic.FeedbackLoop();
 
                 int_Time = 1000;
@@ -340,12 +323,16 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 Data.getHistory();
 
                 Output.setText("");
-                if (Data.HistoryList.size() > 40)
+                Output.setMovementMethod(new ScrollingMovementMethod());
+
+                if (Data.HistoryList.size() > 20)
                 {
                     for (int i = Data.HistoryList.size() - 20; i < Data.HistoryList.size(); i++)
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
+
+                    Output.scrollTo(0, 20);
                 }
                 else
                 {
@@ -354,7 +341,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
                 }
-                Output.setMovementMethod(new ScrollingMovementMethod());
 
                 if (Logic.bl_NewInput)
                 {
@@ -375,41 +361,47 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         if (bl_Ready)
         {
             Logic.str_Input = Input.getText().toString();
-            bl_Feedback = false;
-            Logic.prepInput();
-
-            Data.getHistory();
-            Logic.str_History = Logic.str_Input;
-            Logic.HistoryRules();
-            Data.HistoryList.add("User: " + Logic.str_History);
-
-            Logic.Respond();
-
-            Data.HistoryList.add("AI: " + Logic.str_Output);
-            Data.saveHistory();
-
-            Data.getHistory();
-
-            Output.setText("");
-            if (Data.HistoryList.size() > 40)
+            if (Logic.str_Input.length() > 0)
             {
-                for (int i = Data.HistoryList.size() - 20; i < Data.HistoryList.size(); i++)
-                {
-                    Output.append(Data.HistoryList.get(i) + "\n");
-                }
-            }
-            else
-            {
-                for (int i = 0; i < Data.HistoryList.size(); i++)
-                {
-                    Output.append(Data.HistoryList.get(i) + "\n");
-                }
-            }
-            Output.setMovementMethod(new ScrollingMovementMethod());
+                bl_Feedback = false;
+                Logic.prepInput();
 
-            Logic.ClearLeftovers();
-            Input.setText("");
-            int_Time = 10000;
+                Data.getHistory();
+                Logic.str_History = Logic.str_Input;
+                Logic.HistoryRules();
+                Data.HistoryList.add("User: " + Logic.str_History);
+
+                Logic.Respond();
+
+                Data.HistoryList.add("AI: " + Logic.str_Output);
+                Data.saveHistory();
+
+                Data.getHistory();
+
+                Output.setText("");
+                Output.setMovementMethod(new ScrollingMovementMethod());
+
+                if (Data.HistoryList.size() > 20)
+                {
+                    for (int i = Data.HistoryList.size() - 20; i < Data.HistoryList.size(); i++)
+                    {
+                        Output.append(Data.HistoryList.get(i) + "\n");
+                    }
+
+                    Output.scrollTo(0, 20);
+                }
+                else
+                {
+                    for (int i = 0; i < Data.HistoryList.size(); i++)
+                    {
+                        Output.append(Data.HistoryList.get(i) + "\n");
+                    }
+                }
+
+                Logic.ClearLeftovers();
+                Input.setText("");
+                int_Time = 10000;
+            }
         }
     }
 
@@ -574,10 +566,18 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     @Override
     public boolean onMenuOpened(int featureId, Menu menu)
     {
-        ViewGroup.LayoutParams params = Output.getLayoutParams();
-        params.height = (int)ScreenHeight - (ObjectHeight * 22);
-        Output.setLayoutParams(params);
-        MenuOpen = true;
+        Output.setVisibility(View.INVISIBLE);
+        Input.setVisibility(View.INVISIBLE);
+        btn_Enter.setVisibility(View.INVISIBLE);
+        btn_Menu.setVisibility(View.INVISIBLE);
+
+        if (KeyboardOpen)
+        {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(Input.getWindowToken(), 0);
+        }
+
+        stopTimer();
 
         return super.onMenuOpened(featureId, menu);
     }
@@ -585,10 +585,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     @Override
     public void onPanelClosed(int featureId, Menu menu)
     {
-        ViewGroup.LayoutParams params = Output.getLayoutParams();
-        params.height = (int)ScreenHeight - (ObjectHeight * 12);
-        Output.setLayoutParams(params);
-        MenuOpen = false;
+        Output.setVisibility(View.VISIBLE);
+        Input.setVisibility(View.VISIBLE);
+        btn_Enter.setVisibility(View.VISIBLE);
+        btn_Menu.setVisibility(View.VISIBLE);
+
+        startTimer();
     }
 
     @Override

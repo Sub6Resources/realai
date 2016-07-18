@@ -28,12 +28,10 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -325,14 +323,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 Output.setText("");
                 Output.setMovementMethod(new ScrollingMovementMethod());
 
-                if (Data.HistoryList.size() > 20)
+                if (Data.HistoryList.size() > 40)
                 {
-                    for (int i = Data.HistoryList.size() - 20; i < Data.HistoryList.size(); i++)
+                    for (int i = Data.HistoryList.size() - 40; i < Data.HistoryList.size(); i++)
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
 
-                    Output.scrollTo(0, 20);
+                    Output.scrollTo(0, 40);
                 }
                 else
                 {
@@ -340,6 +338,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
+
+                    Output.scrollTo(0, Data.HistoryList.size());
                 }
 
                 if (Logic.bl_NewInput)
@@ -381,14 +381,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 Output.setText("");
                 Output.setMovementMethod(new ScrollingMovementMethod());
 
-                if (Data.HistoryList.size() > 20)
+                if (Data.HistoryList.size() > 40)
                 {
-                    for (int i = Data.HistoryList.size() - 20; i < Data.HistoryList.size(); i++)
+                    for (int i = Data.HistoryList.size() - 40; i < Data.HistoryList.size(); i++)
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
 
-                    Output.scrollTo(0, 20);
+                    Output.scrollTo(0, 40);
                 }
                 else
                 {
@@ -396,6 +396,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
+
+                    Output.scrollTo(0, Data.HistoryList.size());
                 }
 
                 Logic.ClearLeftovers();

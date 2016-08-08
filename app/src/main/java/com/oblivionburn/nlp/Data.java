@@ -15,7 +15,7 @@ import java.util.Locale;
 class Data
 {
     //Variables
-    private static final List<WordData> WordDataSet = new ArrayList<>();
+    public static final List<WordData> WordDataSet = new ArrayList<>();
     public static final List<String> Words = new ArrayList<>();
     public static final List<Integer> Frequencies = new ArrayList<>();
     public static final List<String> InputList = new ArrayList<>();
@@ -23,12 +23,6 @@ class Data
     public static final List<String> HistoryList = new ArrayList<>();
     public static final List<String> ThoughtList = new ArrayList<>();
     public static final List<String> InformationBank = new ArrayList<>();
-
-    //Properties
-    public static List<WordData> getWordDataSet()
-    {
-        return WordDataSet;
-    }
 
     //Words Data
     public static void saveWords()
@@ -44,9 +38,9 @@ class Data
             writer = new BufferedWriter(new FileWriter(file));
             String WordsLine;
 
-            for (int i = 0; i < getWordDataSet().size(); i++)
+            for (int i = 0; i < WordDataSet.size(); i++)
             {
-                WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString() + "\n";
+                WordsLine = WordDataSet.get(i).getWord() + "~" + WordDataSet.get(i).getFrequency().toString() + "\n";
                 writer.write(WordsLine);
                 writer.newLine();
             }
@@ -60,7 +54,7 @@ class Data
 
     public static void getWords()
     {
-        getWordDataSet().clear();
+        WordDataSet.clear();
         Words.clear();
         Frequencies.clear();
         String WordSet[];
@@ -86,7 +80,7 @@ class Data
                 WordData newset = new WordData();
                 newset.setWord(Words.get(i));
                 newset.setFrequency(Frequencies.get(i));
-                getWordDataSet().add(newset);
+                WordDataSet.add(newset);
             }
             br.close();
         }
@@ -97,7 +91,8 @@ class Data
     }
 
     //PreWords Data
-    public static void savePreWords(String word) {
+    public static void savePreWords(String word)
+    {
         BufferedWriter writer;
         try
         {
@@ -109,9 +104,9 @@ class Data
             writer = new BufferedWriter(new FileWriter(file));
             String WordsLine;
 
-            for (int i = 0; i < getWordDataSet().size(); i++)
+            for (int i = 0; i < WordDataSet.size(); i++)
             {
-                WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString();
+                WordsLine = WordDataSet.get(i).getWord() + "~" + WordDataSet.get(i).getFrequency().toString();
                 writer.write(WordsLine);
                 writer.newLine();
             }
@@ -125,7 +120,7 @@ class Data
 
     public static void getPreWords(String word)
     {
-        getWordDataSet().clear();
+        WordDataSet.clear();
         Words.clear();
         Frequencies.clear();
         String WordSet[];
@@ -152,7 +147,7 @@ class Data
                     WordData newset = new WordData();
                     newset.setWord(Words.get(i));
                     newset.setFrequency(Frequencies.get(i));
-                    getWordDataSet().add(newset);
+                    WordDataSet.add(newset);
                 }
 
                 br.close();
@@ -181,7 +176,8 @@ class Data
     }
 
     //ProWords Data
-    public static void saveProWords(String word) {
+    public static void saveProWords(String word)
+    {
         BufferedWriter writer;
         try
         {
@@ -193,9 +189,9 @@ class Data
             writer = new BufferedWriter(new FileWriter(file));
             String WordsLine;
 
-            for (int i = 0; i < getWordDataSet().size(); i++)
+            for (int i = 0; i < WordDataSet.size(); i++)
             {
-                WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString();
+                WordsLine = WordDataSet.get(i).getWord() + "~" + WordDataSet.get(i).getFrequency().toString();
                 writer.write(WordsLine);
                 writer.newLine();
             }
@@ -209,7 +205,7 @@ class Data
 
     public static void getProWords(String word)
     {
-        getWordDataSet().clear();
+        WordDataSet.clear();
         Words.clear();
         Frequencies.clear();
         String WordSet[];
@@ -236,7 +232,7 @@ class Data
                     WordData newset = new WordData();
                     newset.setWord(Words.get(i));
                     newset.setFrequency(Frequencies.get(i));
-                    getWordDataSet().add(newset);
+                    WordDataSet.add(newset);
                 }
                 br.close();
             }
@@ -354,7 +350,7 @@ class Data
                 String line;
                 while ((line = br.readLine()) != null)
                 {
-                    if (!line.equals(""))
+                    if (!line.equals("") && !line.contains("~"))
                     {
                         OutputList.add(line);
                     }
@@ -382,6 +378,37 @@ class Data
                 ex.printStackTrace();
             }
         }
+    }
+
+    public static String getTopic(String input)
+    {
+        String result = "";
+
+        File file = new File(MainActivity.Brain_dir, input + ".txt");
+
+        if (file.isFile())
+        {
+            try
+            {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("~"))
+                    {
+                        result = line.substring(1, line.length());
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
     }
 
     //History Data
@@ -515,15 +542,13 @@ class Data
         {
             for (int a = 0; a < InputList.size(); a++)
             {
-                if (InputList.get(a).contains(topic))
+                String result = getTopic(InputList.get(a));
+                if (result.equals(topic))
                 {
                     getOutputList(InputList.get(a));
-                    if (OutputList.size() > 0)
+                    for (int b = 0; b < OutputList.size(); b++)
                     {
-                        for (int b = 0; b < OutputList.size(); b++)
-                        {
-                            InformationBank.add(OutputList.get(b));
-                        }
+                        InformationBank.add(OutputList.get(b));
                     }
                 }
             }

@@ -13,6 +13,7 @@ class Logic
     private static String str_response = "";
     public static String str_last_response = "";
     public static String str_History = "";
+    public static String str_lowest_word = "";
     private static String[] WordArray;
     public static Boolean bl_Initiation = false;
     public static Boolean bl_NewInput = false;
@@ -102,14 +103,13 @@ class Logic
     private static void prepInput_UpdateExistingFrequencies()
     {
         Data.getWords();
-
-        for (int a = 0; a < Data.getWordDataSet().size(); a++)
+        for (int a = 0; a < Data.WordDataSet.size(); a++)
         {
             for (String word : WordArray)
             {
-                if (Data.getWordDataSet().get(a).getWord().equals(word))
+                if (Data.WordDataSet.get(a).getWord().equals(word))
                 {
-                    Data.getWordDataSet().get(a).setFrequency(Data.getWordDataSet().get(a).getFrequency() + 1);
+                    Data.WordDataSet.get(a).setFrequency(Data.WordDataSet.get(a).getFrequency() + 1);
                 }
             }
         }
@@ -123,22 +123,16 @@ class Logic
 
         for (String word : WordArray)
         {
-            if (!Data.Words.contains(word))
+            if (!Data.Words.contains(word) && !word.equals(""))
             {
-                if (!word.equals(""))
-                {
-                    WordData new_wordset = new WordData();
-                    new_wordset.setWord(word);
-                    new_wordset.setFrequency(1);
-                    Data.getWordDataSet().add(new_wordset);
-                    Data.saveWords();
-
-                    Data.getWordDataSet().clear();
-                    Data.savePreWords(word);
-                    Data.saveProWords(word);
-                }
+                WordData new_wordset = new WordData();
+                new_wordset.setWord(word);
+                new_wordset.setFrequency(1);
+                Data.WordDataSet.add(new_wordset);
             }
         }
+
+        Data.saveWords();
     }
 
     private static void prepInput_UpdatePreWords()
@@ -149,16 +143,16 @@ class Logic
             Data.getPreWords(WordArray[i + 1]);
             Data.Words.clear();
 
-            for (int a = 0; a < Data.getWordDataSet().size(); a++)
+            for (int a = 0; a < Data.WordDataSet.size(); a++)
             {
-                Data.Words.add(Data.getWordDataSet().get(a).getWord());
+                Data.Words.add(Data.WordDataSet.get(a).getWord());
             }
 
             //Update the frequency of existing words
             if (Data.Words.contains(WordArray[i]))
             {
                 int index = Data.Words.indexOf(WordArray[i]);
-                Data.getWordDataSet().get(index).setFrequency(Data.getWordDataSet().get(index).getFrequency() + 1);
+                Data.WordDataSet.get(index).setFrequency(Data.WordDataSet.get(index).getFrequency() + 1);
                 Data.savePreWords(WordArray[i + 1]);
             }
             else
@@ -169,7 +163,7 @@ class Logic
                     WordData new_wordset = new WordData();
                     new_wordset.setWord(WordArray[i]);
                     new_wordset.setFrequency(1);
-                    Data.getWordDataSet().add(new_wordset);
+                    Data.WordDataSet.add(new_wordset);
                     Data.savePreWords(WordArray[i + 1]);
                 }
             }
@@ -183,20 +177,20 @@ class Logic
             if (i != WordArray.length)
             {
                 //Get current pro_words from the database
-                Data.getWordDataSet().clear();
+                Data.WordDataSet.clear();
                 Data.getProWords(WordArray[i]);
                 Data.Words.clear();
 
-                for (int b = 0; b < Data.getWordDataSet().size(); b++)
+                for (int b = 0; b < Data.WordDataSet.size(); b++)
                 {
-                    Data.Words.add(Data.getWordDataSet().get(b).getWord());
+                    Data.Words.add(Data.WordDataSet.get(b).getWord());
                 }
 
                 //Update the frequency of existing words
                 if (Data.Words.contains(WordArray[i + 1]))
                 {
                     int index = Data.Words.indexOf(WordArray[i + 1]);
-                    Data.getWordDataSet().get(index).setFrequency(Data.getWordDataSet().get(index).getFrequency() + 1);
+                    Data.WordDataSet.get(index).setFrequency(Data.WordDataSet.get(index).getFrequency() + 1);
                     Data.saveProWords(WordArray[i]);
                 }
                 else
@@ -207,7 +201,7 @@ class Logic
                         WordData new_wordset = new WordData();
                         new_wordset.setWord(WordArray[i + 1]);
                         new_wordset.setFrequency(1);
-                        Data.getWordDataSet().add(new_wordset);
+                        Data.WordDataSet.add(new_wordset);
                         Data.saveProWords(WordArray[i]);
                     }
                 }
@@ -218,15 +212,15 @@ class Logic
     public static void Respond()
     {
         //Get topic
-        String str_lowest_word = Get_LowestFrequency();
+        if (bl_NewInput)
+        {
+            UpdateOutputList();
+        }
+
+        str_lowest_word = Get_LowestFrequency();
 
         if (str_lowest_word.length() > 0)
         {
-            if (bl_NewInput)
-            {
-                UpdateOutputList();
-            }
-
             Boolean bl_MatchFound = false;
 
             //Check for existing responses to phrases using the topic
@@ -284,14 +278,14 @@ class Logic
         while (bl_words_found)
         {
             Data.getPreWords(str_current_pre_word);
-            if (Data.getWordDataSet().size() > 0)
+            if (Data.WordDataSet.size() > 0)
             {
                 Data.Words.clear();
                 Data.Frequencies.clear();
-                for (int c = 0; c < Data.getWordDataSet().size(); c++)
+                for (int c = 0; c < Data.WordDataSet.size(); c++)
                 {
-                    Data.Words.add(Data.getWordDataSet().get(c).getWord());
-                    Data.Frequencies.add(Data.getWordDataSet().get(c).getFrequency());
+                    Data.Words.add(Data.WordDataSet.get(c).getWord());
+                    Data.Frequencies.add(Data.WordDataSet.get(c).getFrequency());
                 }
 
                 int_highest_f = GetMax(Data.Frequencies);
@@ -349,14 +343,14 @@ class Logic
         while (bl_words_found)
         {
             Data.getProWords(str_current_pro_word);
-            if (Data.getWordDataSet().size() > 0)
+            if (Data.WordDataSet.size() > 0)
             {
                 Data.Words.clear();
                 Data.Frequencies.clear();
-                for (int e = 0; e < Data.getWordDataSet().size(); e++)
+                for (int e = 0; e < Data.WordDataSet.size(); e++)
                 {
-                    Data.Words.add(Data.getWordDataSet().get(e).getWord());
-                    Data.Frequencies.add(Data.getWordDataSet().get(e).getFrequency());
+                    Data.Words.add(Data.WordDataSet.get(e).getWord());
+                    Data.Frequencies.add(Data.WordDataSet.get(e).getFrequency());
                 }
 
                 int_highest_f = GetMax(Data.Frequencies);
@@ -435,6 +429,11 @@ class Logic
 
         Data.getOutputList(str_last_response);
 
+        if (!(str_lowest_word.equals(" .") || str_lowest_word.equals(" $") || str_lowest_word.equals(" !") || str_lowest_word.equals(" ,") || str_lowest_word.equals("")))
+        {
+            Data.OutputList.add(0, "~" + str_lowest_word);
+        }
+
         if (str_Input.length() > 1)
         {
             str_Input = PunctuationFix_ForInput(str_Input);
@@ -459,10 +458,10 @@ class Logic
 
         if (bl_Initiation)
         {
-            for (int a = 0; a < Data.getWordDataSet().size(); a++)
+            for (int a = 0; a < Data.WordDataSet.size(); a++)
             {
-                Words.add(Data.getWordDataSet().get(a).getWord());
-                Frequencies.add(Data.getWordDataSet().get(a).getFrequency());
+                Words.add(Data.WordDataSet.get(a).getWord());
+                Frequencies.add(Data.WordDataSet.get(a).getFrequency());
             }
 
             if (Words.size() > 0)
@@ -474,7 +473,7 @@ class Logic
                     int int_choice = random.nextInt(Words.size());
                     lowest_word = Words.get(int_choice);
 
-                    bl_accepted = !(lowest_word.equals(".") || lowest_word.equals("$") || lowest_word.equals("!") || lowest_word.equals(","));
+                    bl_accepted = !(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,"));
 
                     if (bl_accepted)
                     {
@@ -489,12 +488,12 @@ class Logic
             {
                 for (String word : WordArray)
                 {
-                    for (int a2 = 0; a2 < Data.getWordDataSet().size(); a2++)
+                    for (int a2 = 0; a2 < Data.WordDataSet.size(); a2++)
                     {
-                        if (Data.getWordDataSet().get(a2).getWord().equals(word))
+                        if (Data.WordDataSet.get(a2).getWord().equals(word))
                         {
-                            Words.add(Data.getWordDataSet().get(a2).getWord());
-                            Frequencies.add(Data.getWordDataSet().get(a2).getFrequency());
+                            Words.add(Data.WordDataSet.get(a2).getWord());
+                            Frequencies.add(Data.WordDataSet.get(a2).getFrequency());
                         }
                     }
                 }
@@ -519,14 +518,13 @@ class Logic
                     int int_choice = random.nextInt(RandomOnes.size());
                     lowest_word = Words.get(RandomOnes.get(int_choice));
 
-                    bl_accepted = !(lowest_word.equals(".") || lowest_word.equals("$") || lowest_word.equals("!") || lowest_word.equals(","));
+                    bl_accepted = !(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,"));
 
                     if (bl_accepted)
                     {
                         break;
                     }
                 }
-
             }
         }
 
@@ -732,10 +730,10 @@ class Logic
                         Data.Words.clear();
                         Data.Frequencies.clear();
                         Data.getWords();
-                        for (int a = 0; a < Data.getWordDataSet().size(); a++)
+                        for (int a = 0; a < Data.WordDataSet.size(); a++)
                         {
-                            Data.Words.add(Data.getWordDataSet().get(a).getWord());
-                            Data.Frequencies.add(Data.getWordDataSet().get(a).getFrequency());
+                            Data.Words.add(Data.WordDataSet.get(a).getWord());
+                            Data.Frequencies.add(Data.WordDataSet.get(a).getFrequency());
                         }
 
                         String str_lower_word = str_checked_word;

@@ -302,7 +302,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
 
                 Output.setText(R.string.thinking);
-                Output.scrollTo(0, 0);
+                Output.setSelection(0);
                 Logic.FeedbackLoop();
 
                 int_Time = 1000;
@@ -329,8 +329,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
-
-                    Output.scrollTo(0, 40);
                 }
                 else
                 {
@@ -338,9 +336,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
-
-                    Output.scrollTo(0, Data.HistoryList.size());
                 }
+
+                Output.setSelection(Output.getText().length());
 
                 if (Logic.bl_NewInput)
                 {
@@ -387,8 +385,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
-
-                    Output.scrollTo(0, 40);
                 }
                 else
                 {
@@ -396,9 +392,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         Output.append(Data.HistoryList.get(i) + "\n");
                     }
-
-                    Output.scrollTo(0, Data.HistoryList.size());
                 }
+
+                Output.setSelection(Output.getText().length());
 
                 Logic.ClearLeftovers();
                 Input.setText("");
@@ -807,7 +803,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
     public void WordFix(View view)
     {
-        String oldWord = Data.getWordDataSet().get(wordfix_selection).getWord();
+        String oldWord = Data.WordDataSet.get(wordfix_selection).getWord();
         String newWord = txt_WordFix.getText().toString();
 
         Data.getInputList();
@@ -846,13 +842,13 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         for (int i = 0; i < words.size(); i++)
         {
             Data.getPreWords(words.get(i));
-            for (int j = 0; j < Data.getWordDataSet().size(); j++)
+            for (int j = 0; j < Data.WordDataSet.size(); j++)
             {
-                if (Data.getWordDataSet().get(j).getWord().equals(oldWord))
+                if (Data.WordDataSet.get(j).getWord().equals(oldWord))
                 {
-                    String oldPath = "Pre-" + Data.getWordDataSet().get(j).getWord() + ".txt";
-                    Data.getWordDataSet().get(j).setWord(newWord);
-                    String newPath = "Pre-" + Data.getWordDataSet().get(j).getWord() + ".txt";
+                    String oldPath = "Pre-" + Data.WordDataSet.get(j).getWord() + ".txt";
+                    Data.WordDataSet.get(j).setWord(newWord);
+                    String newPath = "Pre-" + Data.WordDataSet.get(j).getWord() + ".txt";
 
                     File oldFile = new File(MainActivity.Brain_dir, oldPath);
                     File newFile = new File(MainActivity.Brain_dir, newPath);
@@ -862,13 +858,13 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             Data.savePreWords(words.get(i));
 
             Data.getProWords(words.get(i));
-            for (int j = 0; j < Data.getWordDataSet().size(); j++)
+            for (int j = 0; j < Data.WordDataSet.size(); j++)
             {
-                if (Data.getWordDataSet().get(j).getWord().equals(oldWord))
+                if (Data.WordDataSet.get(j).getWord().equals(oldWord))
                 {
-                    String oldPath = "Pro-" + Data.getWordDataSet().get(j).getWord() + ".txt";
-                    Data.getWordDataSet().get(j).setWord(newWord);
-                    String newPath = "Pro-" + Data.getWordDataSet().get(j).getWord() + ".txt";
+                    String oldPath = "Pro-" + Data.WordDataSet.get(j).getWord() + ".txt";
+                    Data.WordDataSet.get(j).setWord(newWord);
+                    String newPath = "Pro-" + Data.WordDataSet.get(j).getWord() + ".txt";
 
                     File oldFile = new File(MainActivity.Brain_dir, oldPath);
                     File newFile = new File(MainActivity.Brain_dir, newPath);
@@ -879,7 +875,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
 
         Data.getWords();
-        Data.getWordDataSet().get(wordfix_selection).setWord(newWord);
+        Data.WordDataSet.get(wordfix_selection).setWord(newWord);
         Data.saveWords();
 
         //Set Spinner

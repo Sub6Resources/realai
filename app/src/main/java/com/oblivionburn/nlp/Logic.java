@@ -1,683 +1,637 @@
 package com.oblivionburn.nlp;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Logic 
+class Logic
 {
-	//Variables
-	public static String str_Input = "";
-	public static String str_Output = "";
-	public static String str_response = "";
-	public static String str_last_response = "";
-	public static String str_History = "";
-	public static String[] WordArray;
-	public static Boolean bl_Initiation = false;
-	public static Boolean bl_NewInput = false;
-	public static Boolean bl_MatchFound = false;
-	private static List<String> Words = new ArrayList<String>();
-	private static List<Integer> Frequencies = new ArrayList<Integer>();
-	
-	public static void prepInput() throws IOException
-    {    	
-    	if (!str_Input.equals(null) && !str_Input.equals(""))
-    	{
-    		try
-    		{
-	    		List<String> doc_chars = new ArrayList<String>();
-	    		for (char c : str_Input.toCharArray())
-	            {
-	                String str = Character.toString(c);
-	                doc_chars.add(str);
-	            }
+    //Variables
+    static String last_response = "";
+    static Boolean Initiation = false;
+    static Boolean NewInput = false;
+    static Boolean UserInput = false;
 
-	    		str_Input = "";
+    static String last_response_thinking = "";
+    static Boolean NewInput_ForThinking = false;
 
-	    		for (int i = 0; i < doc_chars.size(); i++)
-	            {
-	                if (doc_chars.get(i).equals(","))
-	                {
-	                    doc_chars.set(i, " ,");
-	                }
-	                else if (doc_chars.get(i).equals(";"))
-	                {
-	                	doc_chars.set(i, " ;");
-	                }
-	                else if (doc_chars.get(i).equals(":"))
-	                {
-	                	doc_chars.set(i, null);
-	                }
-	                else if (doc_chars.get(i).equals("?"))
-	                {
-	                	doc_chars.set(i, " $");
-	                }
-	                else if (doc_chars.get(i).equals("$"))
-	                {
-	                	doc_chars.set(i, " $");
-	                }
-	                else if (doc_chars.get(i).equals("!"))
-	                {
-	                	doc_chars.set(i, " !");
-	                }
-	                else if (doc_chars.get(i).equals("."))
-	                {
-	                	if (doc_chars.size() >= i + 2)
-	                	{
-		                	if (doc_chars.get(i + 1).equals("."))
-		                	{
-		                		doc_chars.set(i, " .");
-		                		i = i + 2;
-		                	}
-		                	else	                		
-		                	{
-		                		doc_chars.set(i, " .");
-		                	}
-	                	}	                	
-	                }
-	            }
-	    		
-	    		for (int i = 0; i < doc_chars.size(); i++)
-	            {
-	    			str_Input += doc_chars.get(i);
-	            }
-	    		
-	    		WordArray = str_Input.split(" ");
-	    		
-	    		for (int i = 0; i < WordArray.length; i++)
-	            {
-	    			if (WordArray[i].equals(","))
-	                {
-	                    WordArray[i] = " ,";
-	                }
-	                else if (WordArray[i].equals(";"))
-	                {
-	                	WordArray[i] = " ;";
-	                }
-	                else if (WordArray[i].equals(":"))
-	                {
-	                	WordArray[i] = null;
-	                }
-	                else if (WordArray[i].equals("?"))
-	                {
-	                	WordArray[i] = " $";
-	                }
-	                else if (WordArray[i].equals("$"))
-	                {
-	                	WordArray[i] = " $";
-	                }
-	                else if (WordArray[i].equals("!"))
-	                {
-	                	WordArray[i] = " !";
-	                }
-	                else if (WordArray[i].equals("."))
-	                {
-	                	WordArray[i] = " .";
-	                }
-	            }
-	    		
-	    		//Get current words
-	    		Data.getWords();
-	    		
-	    		//Update the frequency of existing words
-	    		if (Data.getWordDataSet().size() > 0)
-	    		{
-	    			for (int a = 0; a < Data.getWordDataSet().size(); a++)
-	                {
-	                    for (int b = 0; b < WordArray.length; b++)
-	                    {
-	                        if (Data.getWordDataSet().get(a).getWord().equals(WordArray[b]))
-	                        {
-	                        	Data.getWordDataSet().get(a).setFrequency(Data.getWordDataSet().get(a).getFrequency() + 1);
-	                        }
-	                    }
-	                }
-	    			
-	    			Data.saveWords();
-	    		}
-	    		
-	    		//Add new words
-	    		for (int i = 0; i < WordArray.length; i++)
-	            {
-	                if (Data.Words.contains(WordArray[i]))
-	                {
-	
-	                }
-	                else
-	                {
-	                	if (!WordArray[i].equals(""))
-	                	{
-	                		Data.getWords();
-		                    WordData new_wordset = new WordData();
-		                    new_wordset.setWord(WordArray[i]);
-		                    new_wordset.setFrequency(1);
-		                    Data.getWordDataSet().add(new_wordset);
-		                    Data.saveWords();
-		
-		                    Data.getWordDataSet().clear();
-		                    Data.savePreWords(WordArray[i]);
-		                    Data.saveProWords(WordArray[i]);
-	                	}
-	                }
-	            }
-	    		
-	    		//Check each word in the sentence after we have possibly created new pre/pro word tables in the previous code
-	    		for (int i = 0; i < WordArray.length - 1; i++)
-                {
-                    //Get current pre_words from the database
-	    			Data.getPreWords(WordArray[i + 1]);
-	    			Data.Words.clear();
+    static String[] prepInput(String input)
+    {
+        String[] wordArray = prepInput_CreateWordArray(input);
 
-                    for (int a = 0; a < Data.getWordDataSet().size(); a++)
-                    {
-                    	Data.Words.add(Data.getWordDataSet().get(a).getWord());
-                    }
+        if (wordArray != null)
+        {
+            if (UserInput)
+            {
+                UpdateInputList(input);
+                prepInput_UpdateExistingFrequencies(wordArray);
+                prepInput_AddNewWords(wordArray);
+                prepInput_UpdatePreWords(wordArray);
+                prepInput_UpdateProWords(wordArray);
+                UserInput = false;
+            }
+        }
 
-                    //Update the frequency of existing words
-                    if (Data.Words.contains(WordArray[i]))
-                    {
-                        int index = Data.Words.indexOf(WordArray[i]);
-                        Data.getWordDataSet().get(index).setFrequency(Data.getWordDataSet().get(index).getFrequency() + 1);
-                        Data.savePreWords(WordArray[i + 1]);
-                    }
-                    else
-                    {
-                        //Or add the word
-                    	if (!WordArray[i].equals(""))
-                    	{
-                    		WordData new_wordset = new WordData();
-                            new_wordset.setWord(WordArray[i]);
-    	                    new_wordset.setFrequency(1);
-    	                    Data.getWordDataSet().add(new_wordset);
-    	                    Data.savePreWords(WordArray[i + 1]);
-                    	}
-                    }
-                    
-                    if (i == WordArray.length)
-                    {
-
-                    }
-                    else
-                    {
-                        //Get current pro_words from the database
-                    	Data.getWordDataSet().clear();
-                    	Data.getProWords(WordArray[i]);
-                    	Data.Words.clear();
-
-                        for (int b = 0; b < Data.getWordDataSet().size(); b++)
-                        {
-                        	Data.Words.add(Data.getWordDataSet().get(b).getWord());
-                        }
-
-                        //Update the frequency of existing words
-                        if (Data.Words.contains(WordArray[i + 1]))
-                        {
-                            int index = Data.Words.indexOf(WordArray[i + 1]);
-                            Data.getWordDataSet().get(index).setFrequency(Data.getWordDataSet().get(index).getFrequency() + 1);
-                            Data.saveProWords(WordArray[i]);
-                        }
-                        else
-                        {
-                            //Or add the word
-                        	if (!WordArray[i + 1].equals(""))
-                        	{
-                        		WordData new_wordset = new WordData();
-                                new_wordset.setWord(WordArray[i + 1]);
-        	                    new_wordset.setFrequency(1);
-        	                    Data.getWordDataSet().add(new_wordset);
-        	                    Data.saveProWords(WordArray[i]);
-                        	}
-                        }
-                    }
-                }
-    		}
-    		catch(IOException ex)
-    		{
-    			ex.printStackTrace();
-    		}
-    	}
+        return wordArray;
     }
 
-    public static void Respond() throws FileNotFoundException
+    private static String[] prepInput_CreateWordArray(String input)
     {
-    	//Get the lowest frequency word from the input
-    	Frequencies.clear();
-    	Words.clear();
-    	Data.getWords();
-        String str_lowest_word = "";
-        int int_lowest_f = 0;
-        int int_highest_f = 0;
-        
-        if (bl_Initiation == true)
+        String[] wordArray;
+        String result = input;
+
+        List<String> doc_chars = new ArrayList<>();
+        for (char c : result.toCharArray())
         {
-            for (int a = 0; a < Data.getWordDataSet().size(); a++)
+            String str = Character.toString(c);
+            doc_chars.add(str);
+        }
+
+        result = "";
+
+        for (int i = 0; i < doc_chars.size(); i++)
+        {
+            if (doc_chars.get(i).equals(","))
             {
-            	Words.add(Data.getWordDataSet().get(a).getWord());
-            	Frequencies.add(Data.getWordDataSet().get(a).getFrequency());
+                doc_chars.set(i, " ,");
             }
-            
-            if (Words.size() > 0)
+            else if (doc_chars.get(i).equals(";"))
             {
-            	Boolean bl_accepted = false;
-                for (int i = 0; i < Words.size(); i++)
+                doc_chars.set(i, " ;");
+            }
+            else if (doc_chars.get(i).equals(":"))
+            {
+                doc_chars.set(i, null);
+            }
+            else if (doc_chars.get(i).equals("?"))
+            {
+                doc_chars.set(i, " $");
+            }
+            else if (doc_chars.get(i).equals("$"))
+            {
+                doc_chars.set(i, " $");
+            }
+            else if (doc_chars.get(i).equals("!"))
+            {
+                doc_chars.set(i, " !");
+            }
+            else if (doc_chars.get(i).equals("."))
+            {
+                if (doc_chars.size() >= i + 2)
                 {
-	                Random random = new Random();
-	                int int_choice = random.nextInt(Words.size());
-	                str_lowest_word = Words.get(int_choice);
-	                
-	                if (str_lowest_word.equals(".") || str_lowest_word.equals("$") || str_lowest_word.equals("!") || str_lowest_word.equals(","))
+                    if (doc_chars.get(i + 1).equals("."))
                     {
-                    	bl_accepted = false;
+                        doc_chars.set(i, " .");
+                        i = i + 2;
                     }
-	                else
+                    else
                     {
-                    	bl_accepted = true;
+                        doc_chars.set(i, " .");
                     }
-                    
-                    if (bl_accepted == true)
+                }
+                else
+                {
+                    doc_chars.set(i, " .");
+                }
+            }
+        }
+
+        for (int i = 0; i < doc_chars.size(); i++)
+        {
+            result += doc_chars.get(i);
+        }
+
+        if (!result.equals(""))
+        {
+            wordArray = result.split(" ");
+
+            for (int i = 0; i < wordArray.length; i++)
+            {
+                wordArray[i] = PunctuationFix_ForInput(wordArray[i]);
+            }
+
+            return wordArray;
+        }
+
+        return null;
+    }
+
+    private static void prepInput_UpdateExistingFrequencies(String[] wordArray)
+    {
+        List<WordData> data = Data.getWords();
+
+        for (int a = 0; a < data.size(); a++)
+        {
+            for (String word : wordArray)
+            {
+                if (data.get(a).getWord().equals(word))
+                {
+                    data.get(a).setFrequency(data.get(a).getFrequency() + 1);
+                }
+            }
+        }
+
+        Data.saveWords(data);
+    }
+
+    private static void prepInput_AddNewWords(String[] wordArray)
+    {
+        if (wordArray.length > 0)
+        {
+            List<WordData> data = Data.getWords();
+
+            for (String word : wordArray)
+            {
+                //noinspection SuspiciousMethodCalls
+                if (data.size() > 0)
+                {
+                    Boolean found = false;
+                    for (int i = 0; i < data.size(); i++)
                     {
-                    	break;
+                        if (data.get(i).getWord().equals(word) && !word.equals(""))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        WordData new_wordset = new WordData();
+                        new_wordset.setWord(word);
+                        new_wordset.setFrequency(1);
+                        data.add(new_wordset);
+                    }
+                }
+                else
+                {
+                    WordData new_wordset = new WordData();
+                    new_wordset.setWord(word);
+                    new_wordset.setFrequency(1);
+                    data.add(new_wordset);
+                }
+            }
+
+            Data.saveWords(data);
+        }
+    }
+
+    private static void prepInput_UpdatePreWords(String[] wordArray)
+    {
+        for (int i = 0; i < wordArray.length - 1; i++)
+        {
+            //Get current pre_words from the database
+            List<WordData> data = Data.getPreWords(wordArray[i + 1]);
+
+            List<String> words = new ArrayList<>();
+            for (int a = 0; a < data.size(); a++)
+            {
+                words.add(data.get(a).getWord());
+            }
+
+            //Update the frequency of existing words
+            if (words.contains(wordArray[i]))
+            {
+                int index = words.indexOf(wordArray[i]);
+                data.get(index).setFrequency(data.get(index).getFrequency() + 1);
+                Data.savePreWords(data, wordArray[i + 1]);
+            }
+            else
+            {
+                //Or add the word
+                if (!wordArray[i].equals(""))
+                {
+                    WordData new_wordset = new WordData();
+                    new_wordset.setWord(wordArray[i]);
+                    new_wordset.setFrequency(1);
+                    data.add(new_wordset);
+                    Data.savePreWords(data, wordArray[i + 1]);
+                }
+            }
+        }
+    }
+
+    private static void prepInput_UpdateProWords(String[] wordArray)
+    {
+        for (int i = 0; i < wordArray.length - 1; i++)
+        {
+            if (i != wordArray.length)
+            {
+                //Get current pro_words from the database
+                List<WordData> data = Data.getProWords(wordArray[i]);
+
+                List<String> words = new ArrayList<>();
+                for (int b = 0; b < data.size(); b++)
+                {
+                    words.add(data.get(b).getWord());
+                }
+
+                //Update the frequency of existing words
+                if (words.contains(wordArray[i + 1]))
+                {
+                    int index = words.indexOf(wordArray[i + 1]);
+                    data.get(index).setFrequency(data.get(index).getFrequency() + 1);
+                    Data.saveProWords(data, wordArray[i]);
+                }
+                else
+                {
+                    //Or add the word
+                    if (!wordArray[i + 1].equals(""))
+                    {
+                        WordData new_wordset = new WordData();
+                        new_wordset.setWord(wordArray[i + 1]);
+                        new_wordset.setFrequency(1);
+                        data.add(new_wordset);
+                        Data.saveProWords(data, wordArray[i]);
                     }
                 }
             }
         }
-        else
+    }
+
+    static String Respond(String[] wordArray, String input, Boolean initiation)
+    {
+        String output;
+        String response = "";
+
+        String lowest_word = Get_LowestFrequency(wordArray, initiation);
+
+        AddTopic(input, lowest_word);
+
+        if (NewInput)
         {
-        	if (WordArray != null)
+            UpdateOutputList(input);
+        }
+
+        if (lowest_word.length() > 0)
+        {
+            Boolean bl_MatchFound = false;
+
+            //Check for existing responses to phrases using the topic
+            List<String> info = Data.pullInfo(lowest_word);
+            if (info.size() > 0)
             {
-            	for (int a = 0; a < WordArray.length; a++)
+                //If some found, pick one at random
+                Random rand = new Random();
+                int int_random_choice = rand.nextInt(info.size());
+                response = info.get(int_random_choice);
+                bl_MatchFound = true;
+            }
+
+            //If none found, check for conditioned responses
+            if (!bl_MatchFound)
+            {
+                String temp_input = PunctuationFix_ForInput(input);
+                List<String> outputList = Data.getOutputList_NoTopics(temp_input);
+                if (outputList.size() > 0)
                 {
-                    for (int a2 = 0; a2 < Data.getWordDataSet().size(); a2++)
-                    {
-                        if (Data.getWordDataSet().get(a2).getWord().equals(WordArray[a]))
-                        {
-                        	Words.add(Data.getWordDataSet().get(a2).getWord());
-                        	Frequencies.add(Data.getWordDataSet().get(a2).getFrequency());
-                        }
-                    }
+                    //If some found, pick one at random
+                    Random rand = new Random();
+                    int int_random_choice = rand.nextInt(outputList.size());
+                    response = outputList.get(int_random_choice);
+                    bl_MatchFound = true;
                 }
             }
-            
-            if (Frequencies.size() > 0)
+
+            //If none found, procedurally generate a response using the topic
+            if (!bl_MatchFound)
             {
-            	int_lowest_f = GetMin(Frequencies);
-            	List<Integer> RandomOnes = new ArrayList<Integer>();
-                for (int b = 0; b < Frequencies.size(); b++)
+                response = GenerateResponse(lowest_word);
+            }
+
+            response = RulesCheck(response);
+            output = response;
+            last_response = response;
+
+            NewInput = true;
+        }
+        else
+        {
+            output = "";
+        }
+
+        return output;
+    }
+
+    private static String GenerateResponse(String lowest_word)
+    {
+        int int_highest_f;
+        String current_pre_word = lowest_word;
+        String current_pro_word = lowest_word;
+        String response = current_pre_word;
+        Boolean words_found = true;
+        String[] checker;
+        String[] checker2;
+        String repeater_check = "";
+        Random random;
+
+        List<WordData> data;
+        List<String> words;
+        List<Integer> frequencies;
+
+        while (words_found)
+        {
+            data = Data.getPreWords(current_pre_word);
+            if (data.size() > 0)
+            {
+                words = new ArrayList<>();
+                frequencies = new ArrayList<>();
+
+                for (int c = 0; c < data.size(); c++)
                 {
-                    if (Frequencies.get(b) == int_lowest_f)
+                    words.add(data.get(c).getWord());
+                    frequencies.add(data.get(c).getFrequency());
+                }
+
+                int_highest_f = GetMax(frequencies);
+                List<Integer> RandomOnes = new ArrayList<>();
+                for (int b = 0; b < frequencies.size(); b++)
+                {
+                    if (frequencies.get(b) == int_highest_f)
                     {
                         RandomOnes.add(b);
                     }
                 }
-                
-                Boolean bl_accepted = false;
-                for (int i = 0; i < RandomOnes.size(); i++)
+                random = new Random();
+                int int_choice2 = random.nextInt(RandomOnes.size());
+                current_pre_word = words.get(RandomOnes.get(int_choice2));
+
+                if (current_pre_word.length() > 1)
                 {
-                	Random random = new Random();
-                    int int_choice = random.nextInt(RandomOnes.size());
-                    str_lowest_word = Words.get(RandomOnes.get(int_choice));
-                    
-                    if (str_lowest_word.equals(".") || str_lowest_word.equals("$") || str_lowest_word.equals("!") || str_lowest_word.equals(","))
+                    StringBuilder sb = new StringBuilder(current_pre_word).delete(1, current_pre_word.length() - 1);
+                    char first_letter = sb.charAt(0);
+                    if (Character.isUpperCase(first_letter))
                     {
-                    	bl_accepted = false;
-                    }
-                    else
-                    {
-                    	bl_accepted = true;
-                    }
-                    
-                    if (bl_accepted == true)
-                    {
-                    	break;
+                        String str2 = response;
+                        StringBuilder sb2 = new StringBuilder(str2).insert(0, current_pre_word + " ");
+                        response = sb2.toString();
+                        break;
                     }
                 }
-                
+
+                checker2 = response.split(" ");
+                for (String check2 : checker2)
+                {
+                    String check = check2;
+                    check = PunctuationFix_ForInput(check);
+                    if (check.equals(current_pre_word))
+                    {
+                        words_found = false;
+                        break;
+                    }
+                }
+
+                if (words_found)
+                {
+                    String str = response;
+                    StringBuilder sb = new StringBuilder(str).insert(0, current_pre_word + " ");
+                    response = sb.toString();
+                }
+            }
+            else
+            {
+                words_found = false;
             }
         }
-        
-        //Generate Response
-        if (str_lowest_word.length() > 0)
+        words_found = true;
+
+        while (words_found)
         {
-        	String str_current_pre_word = str_lowest_word;
-            String str_current_pro_word = str_lowest_word;
-            str_response = str_current_pre_word;
-            Boolean bl_words_found = true;
-            String[] arr_checker = null;
-            String[] arr_checker2 = null;
-            String str_repeater_check = "";
-
-            if (bl_NewInput == true)
+            data = Data.getProWords(current_pro_word);
+            if (data.size() > 0)
             {
-            	if (str_last_response.length() > 1)
-            	{
-            		if (str_last_response.contains("?") && str_last_response.charAt(str_last_response.indexOf("?") - 1) != ' ')
-                    {
-                    	String str = str_last_response;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('?'), str.indexOf('?') + 1, " $");
-                    	str_last_response = sb.toString();
-                    }
-                    
-            		if (str_last_response.charAt(str_last_response.length() - 1) == '.' && str_last_response.charAt(str_last_response.length() - 2) != ' ')
-            		{
-            			String str = str_last_response;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('.'), str.indexOf('.') + 1, " .");
-                    	str_last_response = sb.toString();
-            		}
-                    
-                    if (str_last_response.contains("!") && str_last_response.charAt(str_last_response.indexOf("!") - 1) != ' ')
-                    {
-                    	String str = str_last_response;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('!'), str.indexOf('!') + 1, " !");
-                    	str_last_response = sb.toString();
-                    }
-                    
-                    if (str_last_response.contains(",") && str_last_response.charAt(str_last_response.indexOf(",") - 1) != ' ')
-                    {
-                    	String str = str_last_response;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf(','), str.indexOf(',') + 1, " ,");
-                    	str_last_response = sb.toString();
-                    }
-            	}
-                
-                Data.getOutputList(str_last_response);
+                words = new ArrayList<>();
+                frequencies = new ArrayList<>();
 
-                if (str_Input.length() > 1)
+                for (int e = 0; e < data.size(); e++)
                 {
-                	if (str_Input.contains("$") && str_Input.charAt(str_Input.indexOf("$") - 1) != ' ')
+                    words.add(data.get(e).getWord());
+                    frequencies.add(data.get(e).getFrequency());
+                }
+
+                int_highest_f = GetMax(frequencies);
+                List<Integer> RandomOnes = new ArrayList<>();
+                for (int b = 0; b < frequencies.size(); b++)
+                {
+                    if (frequencies.get(b) == int_highest_f)
                     {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('$'), str.indexOf('$') + 1, " $");
-                    	str_Input = sb.toString();
-                    }
-                    
-                    if (str_Input.contains("?") && str_Input.charAt(str_Input.indexOf("?") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('?'), str.indexOf('?') + 1, " $");
-                    	str_Input = sb.toString();
-                    }
-                    
-                    if (str_Input.contains(".") && str_Input.charAt(str_Input.indexOf(".") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('.'), str.indexOf('.') + 1, " .");
-                    	str_Input = sb.toString();
-                    }
-                    
-                    if (str_Input.contains("!") && str_Input.charAt(str_Input.indexOf("!") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('!'), str.indexOf('!') + 1, " !");
-                    	str_Input = sb.toString();
-                    }
-                    
-                    if (str_Input.contains(",") && str_Input.charAt(str_Input.indexOf(",") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf(','), str.indexOf(',') + 1, " ,");
-                    	str_Input = sb.toString();
+                        RandomOnes.add(b);
                     }
                 }
-                
-                if (Data.OutputList.contains(str_Input) || str_last_response.equals(str_Input))
-                {
+                random = new Random();
+                int int_choice2 = random.nextInt(RandomOnes.size());
+                current_pro_word = words.get(RandomOnes.get(int_choice2));
 
-                }
-                else
+                if (repeater_check.length() > 0)
                 {
-                	Data.OutputList.add(str_Input);
-                	Data.saveOutput(str_last_response);
-                	
-                	Data.getInputList();
-                	if (!Data.InputList.contains(str_last_response))
-                	{
-                		Data.InputList.add(str_last_response);
-                		try 
-                		{
-							Data.saveInputList();
-						}
-                		catch (IOException e)
-                		{
-							e.printStackTrace();
-						}
-                	}
+                    checker = repeater_check.split(" ");
+                    for (String check1 : checker)
+                    {
+                        String check = check1;
+                        check = PunctuationFix_ForInput(check);
+                        if (check.equals(current_pro_word))
+                        {
+                            words_found = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (words_found)
+                {
+                    String str = response;
+                    StringBuilder sb = new StringBuilder(str).insert(response.length(), " " + current_pro_word);
+                    response = sb.toString();
+
+                    String str2 = repeater_check;
+                    StringBuilder sb2 = new StringBuilder(str2).insert(repeater_check.length(), current_pro_word + " ");
+                    repeater_check = sb2.toString();
+
+                    if (current_pro_word.equals(".") || current_pro_word.equals("$") || current_pro_word.equals("!"))
+                    {
+                        break;
+                    }
                 }
             }
-            
-            bl_MatchFound = false;
-            Random random = new Random();
-            
-            Data.pullInfo(str_lowest_word);
-            if (Data.InformationBank.size() > 0)
+            else
             {
-                Random rand = new Random();
-                int int_random_choice = rand.nextInt(Data.InformationBank.size());
-                str_response = Data.InformationBank.get(int_random_choice);
-                
-                RulesCheck();
-                str_last_response = str_response;
-                str_Output = str_response;
-                if (MainActivity.bl_Feedback = true)
-                {
-                	str_Input = str_response;
-                }
-                
-                bl_NewInput = true;
-                bl_MatchFound = true;
+                words_found = false;
             }
-            
-            if (bl_MatchFound == false)
+        }
+
+        return response;
+    }
+
+    private static void UpdateInputList(String input)
+    {
+        String new_input = input;
+        List<String> inputList = Data.getInputList();
+
+        if (input.length() > 1)
+        {
+            new_input = PunctuationFix_ForInput(new_input);
+        }
+
+        if (!inputList.contains(new_input))
+        {
+            inputList.add(new_input);
+            Data.saveInputList(inputList);
+        }
+    }
+
+    private static void UpdateOutputList(String input)
+    {
+        String temp_input = input;
+        String temp_last_response = last_response;
+
+        if (temp_input.length() > 1)
+        {
+            temp_input = PunctuationFix_ForInput(temp_input);
+        }
+
+        if (temp_last_response.length() > 1)
+        {
+            temp_last_response = PunctuationFix_ForInput(temp_last_response);
+        }
+
+        //Add new input to previous response output list
+        List<String> output = Data.getOutputList(temp_last_response);
+
+        if (!output.contains(temp_input) && !temp_last_response.equals(temp_input))
+        {
+            output.add(temp_input);
+            Data.saveOutput(output, temp_last_response);
+        }
+    }
+
+    private static void AddTopic(String input, String lowest_word)
+    {
+        String temp_input = input;
+
+        if (temp_input.length() > 1)
+        {
+            temp_input = PunctuationFix_ForInput(temp_input);
+        }
+
+        //Add lowest frequency word to current input's output list
+        List<String> output = Data.getOutputList(temp_input);
+        if (output.size() > 0)
+        {
+            if (output.get(0).contains("~"))
             {
-            	Data.getInputList();
-            	
-            	if (str_Input.length() > 1)
-            	{
-            		if (str_Input.contains("$") && str_Input.charAt(str_Input.indexOf("$") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('$'), str.indexOf('$') + 1, " $");
-                    	str_Input = sb.toString();
-                    }
-                    else if (str_Input.contains(".") && str_Input.charAt(str_Input.indexOf(".") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('.'), str.indexOf('.') + 1, " .");
-                    	str_Input = sb.toString();
-                    }
-                    else if (str_Input.contains("!") && str_Input.charAt(str_Input.indexOf("!") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf('!'), str.indexOf('!') + 1, " !");
-                    	str_Input = sb.toString();
-                    }
-                    else if (str_Input.contains(",") && str_Input.charAt(str_Input.indexOf(",") - 1) != ' ')
-                    {
-                    	String str = str_Input;
-                    	StringBuilder sb = new StringBuilder(str);
-                    	sb.replace(str.indexOf(','), str.indexOf(',') + 1, " ,");
-                    	str_Input = sb.toString();
-                    }
-            	}
-            	
-                if (Data.InputList.contains(str_Input) || str_Input.equals(null))
-                {
-
-                }
-                else
-                {
-                	Data.InputList.add(str_Input);
-                    try 
-                    {
-                    	Data.saveInputList();
-					}
-                    catch (IOException e)
-					{
-                    	e.printStackTrace();
-					}
-                }
-                
-                while (bl_words_found == true)
-                {
-                	Data.getPreWords(str_current_pre_word);
-                    if (Data.getWordDataSet().size() > 0)
-                    {
-                    	Data.Words.clear();
-                    	Data.Frequencies.clear();
-                        for (int c = 0; c < Data.getWordDataSet().size(); c++)
-                        {
-                        	Data.Words.add(Data.getWordDataSet().get(c).getWord());
-                        	Data.Frequencies.add(Data.getWordDataSet().get(c).getFrequency());
-                        }
-
-                        int_highest_f = GetMax(Data.Frequencies);
-                        List<Integer> RandomOnes = new ArrayList<Integer>();
-                        for (int b = 0; b < Data.Frequencies.size(); b++)
-                        {
-                            if (Data.Frequencies.get(b) == int_highest_f)
-                            {
-                                RandomOnes.add(b);
-                            }
-                        }
-                        random = new Random();
-                        int int_choice2 = random.nextInt(RandomOnes.size());
-                        str_current_pre_word = Data.Words.get(RandomOnes.get(int_choice2));
-
-                        if (str_current_pre_word.length() > 1)
-                        {
-                        	StringBuilder sb = new StringBuilder(str_current_pre_word).delete(1, str_current_pre_word.length() - 1);
-                        	char first_letter = sb.charAt(0);
-                            if (Character.isUpperCase(first_letter))
-                            {
-                            	String str2 = str_response;
-                            	StringBuilder sb2 = new StringBuilder(str2).insert(0, str_current_pre_word + " ");
-                                str_response = sb2.toString();
-                                break;
-                            }
-                        }
-
-                        arr_checker2 = str_response.split(" ");
-                        for (int a = 0; a < arr_checker2.length; a++)
-                        {
-                            if (arr_checker2[a].equals(str_current_pre_word))
-                            {
-                                bl_words_found = false;
-                                break;
-                            }
-                        }
-
-                        if (bl_words_found != false)
-                        {
-                        	String str = str_response;
-                        	StringBuilder sb = new StringBuilder(str).insert(0, str_current_pre_word + " ");
-                            str_response = sb.toString();
-                        }
-                    }
-                    else
-                    {
-                        bl_words_found = false;
-                    }
-                }
-                bl_words_found = true;
-                
-                while (bl_words_found == true)
-                {
-                	Data.getProWords(str_current_pro_word);
-                    if (Data.getWordDataSet().size() > 0)
-                    {
-                    	Data.Words.clear();
-                    	Data.Frequencies.clear();
-                        for (int e = 0; e < Data.getWordDataSet().size(); e++)
-                        {
-                        	Data.Words.add(Data.getWordDataSet().get(e).getWord());
-                        	Data.Frequencies.add(Data.getWordDataSet().get(e).getFrequency());
-                        }
-
-                        int_highest_f = GetMax(Data.Frequencies);
-                        List<Integer> RandomOnes = new ArrayList<Integer>();
-                        for (int b = 0; b < Data.Frequencies.size(); b++)
-                        {
-                            if (Data.Frequencies.get(b) == int_highest_f)
-                            {
-                                RandomOnes.add(b);
-                            }
-                        }
-                        random = new Random();
-                        int int_choice2 = random.nextInt(RandomOnes.size());
-                        str_current_pro_word = Data.Words.get(RandomOnes.get(int_choice2));
-                        
-                        if (str_repeater_check.length() > 0)
-                        {
-                        	arr_checker = str_repeater_check.split(" ");
-                            for (int a = 0; a < arr_checker.length; a++)
-                            {
-                                if (arr_checker[a].equals(str_current_pro_word))
-                                {
-                                    bl_words_found = false;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (bl_words_found != false)
-                        {
-                        	String str = str_response;
-                        	StringBuilder sb = new StringBuilder(str).insert(str_response.length(), " " + str_current_pro_word);
-                            str_response = sb.toString();
-
-                            String str2 = str_repeater_check;
-                        	StringBuilder sb2 = new StringBuilder(str2).insert(str_repeater_check.length(), str_current_pro_word + " ");
-                        	str_repeater_check = sb2.toString();
-
-                            if (str_current_pro_word.equals(".") || str_current_pro_word.equals("$") || str_current_pro_word.equals("!"))
-                            {
-                                bl_words_found = false;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        bl_words_found = false;
-                    }
-                }
-                
-                RulesCheck();
-                str_Output = str_response;
-                str_last_response = str_response;
-                if (str_response.equals("") || str_response.equals(null))
-                {
-                	str_response = "";
-                }
-                if (MainActivity.bl_Feedback = true)
-                {
-                	str_Input = str_response;
-                }
-                
-                bl_NewInput = true;
-                bl_words_found = true;
+                output.remove(0);
             }
+        }
+
+        if (!(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,") || lowest_word.equals("")))
+        {
+            output.add(0, "~" + lowest_word);
+            Data.saveOutput(output, temp_input);
+        }
+    }
+
+    private static String Get_LowestFrequency(String[] wordArray, Boolean initiation)
+    {
+        List<String> words = new ArrayList<>();
+        List<Integer> frequencies = new ArrayList<>();
+        int int_lowest_f;
+        String lowest_word = "";
+
+        List<WordData> data = Data.getWords();
+
+        if (initiation)
+        {
+            lowest_word = Get_RandomWord();
         }
         else
         {
-            str_Output = "";
+            if (wordArray != null)
+            {
+                for (String word : wordArray)
+                {
+                    for (int a2 = 0; a2 < data.size(); a2++)
+                    {
+                        if (data.get(a2).getWord().equals(word))
+                        {
+                            words.add(data.get(a2).getWord());
+                            frequencies.add(data.get(a2).getFrequency());
+                        }
+                    }
+                }
+            }
+
+            if (frequencies.size() > 0)
+            {
+                int_lowest_f = GetMin(frequencies);
+                List<Integer> RandomOnes = new ArrayList<>();
+                for (int b = 0; b < frequencies.size(); b++)
+                {
+                    if (frequencies.get(b) == int_lowest_f)
+                    {
+                        RandomOnes.add(b);
+                    }
+                }
+
+                Boolean bl_accepted;
+                for (int i = 0; i < RandomOnes.size(); i++)
+                {
+                    Random random = new Random();
+                    int int_choice = random.nextInt(RandomOnes.size());
+                    lowest_word = words.get(RandomOnes.get(int_choice));
+
+                    bl_accepted = !(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,"));
+
+                    if (bl_accepted)
+                    {
+                        break;
+                    }
+                    else if (i == RandomOnes.size() - 1)
+                    {
+                        lowest_word = Get_RandomWord();
+                    }
+                }
+            }
         }
+
+        return lowest_word;
     }
-    
+
+    private static String Get_RandomWord()
+    {
+        List<String> words = new ArrayList<>();
+        List<Integer> frequencies = new ArrayList<>();
+        String lowest_word = "";
+
+        List<WordData> data = Data.getWords();
+
+        for (int a = 0; a < data.size(); a++)
+        {
+            words.add(data.get(a).getWord());
+            frequencies.add(data.get(a).getFrequency());
+        }
+
+        if (words.size() > 0)
+        {
+            Boolean bl_accepted;
+            for (int i = 0; i < words.size(); i++)
+            {
+                Random random = new Random();
+                int int_choice = random.nextInt(words.size());
+                lowest_word = words.get(int_choice);
+
+                bl_accepted = !(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,"));
+
+                if (bl_accepted)
+                {
+                    break;
+                }
+            }
+        }
+
+        return lowest_word;
+    }
+
     private static int GetMin(List<Integer> Integer_List)
     {
         int lowest_number = 0;
@@ -696,7 +650,7 @@ public class Logic
 
         return lowest_number;
     }
-    
+
     private static int GetMax(List<Integer> Integer_List)
     {
         int highest_number = 0;
@@ -715,374 +669,505 @@ public class Logic
 
         return highest_number;
     }
-    
-    public static void FeedbackLoop() throws IOException 
+
+    private static String PunctuationFix_ForInput(String old_word)
     {
-    	bl_Initiation = true;
-    	bl_NewInput = false;
-    	Respond();
-    	bl_Initiation = false;
-    	
-    	prepInput();
-    	
-    	Data.getThoughts();
-		str_History = Logic.str_Input;
-		Logic.HistoryRules();
-		Data.ThoughtList.add("NLP: " + Logic.str_History);
-    	
-    	Respond();
-    	
-    	Data.ThoughtList.add("NLP: " + Logic.str_Output);
-		Data.saveThoughts();
-    	
-    	ClearLeftovers();
+        String word = old_word;
+
+        if (word.contains("$") && word.indexOf('$') > 0)
+        {
+            if (word.charAt(word.indexOf("$") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf('$'), str.indexOf('$') + 1, " $");
+                word = sb.toString();
+            }
+        }
+        else if (word.contains("?") && word.indexOf('?') > 0)
+        {
+            if (word.charAt(word.indexOf("?") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf('?'), str.indexOf('?') + 1, " $");
+                word = sb.toString();
+            }
+        }
+        else if (word.contains(".") && word.indexOf('.') > 0)
+        {
+            if (word.charAt(word.indexOf(".") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf('.'), str.indexOf('.') + 1, " .");
+                word = sb.toString();
+            }
+        }
+        else if (word.contains("!") && word.indexOf('!') > 0)
+        {
+            if (word.charAt(word.indexOf("!") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf('!'), str.indexOf('!') + 1, " !");
+                word = sb.toString();
+            }
+        }
+        else if (word.contains(",") && word.indexOf(',') > 0)
+        {
+            if (word.charAt(word.indexOf(",") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf(','), str.indexOf(',') + 1, " ,");
+                word = sb.toString();
+            }
+        }
+        else if (word.contains(";") && word.indexOf(';') > 0)
+        {
+            if (word.charAt(word.indexOf(";") - 1) != ' ')
+            {
+                String str = word;
+                StringBuilder sb = new StringBuilder(str);
+                sb.replace(str.indexOf(';'), str.indexOf(';') + 1, " ;");
+                word = sb.toString();
+            }
+        }
+        else if (word.equals("$"))
+        {
+            word = " $";
+        }
+        else if (word.equals("?"))
+        {
+            word = " $";
+        }
+        else if (word.equals("."))
+        {
+            word = " .";
+        }
+        else if (word.equals("!"))
+        {
+            word = " !";
+        }
+        else if (word.equals(","))
+        {
+            word = " ,";
+        }
+        else if (word.equals(";"))
+        {
+            word = " ;";
+        }
+
+        return word;
     }
-    
-    public static void ClearLeftovers()
+
+    static String Think(String[] wordArray)
     {
-    	File file = new File(MainActivity.Brain_dir, ".txt");
-    	if (file.exists())
-    	{
-    		file.delete();
-    	}
-    	
-    	file = new File(MainActivity.Brain_dir, ",.txt");
-    	if (file.exists())
-    	{
-    		file.delete();
-    	}
-    	
-    	file = new File(MainActivity.Brain_dir, "..txt");
-    	if (file.exists())
-    	{
-    		file.delete();
-    	}
-    	
-    	file = new File(MainActivity.Brain_dir, "$.txt");
-    	if (file.exists())
-    	{
-    		file.delete();
-    	}
+        String output;
+        String response = "";
+
+        String lowest_word = Get_LowestFrequency(wordArray, NewInput_ForThinking);
+
+        //Get topic
+        if (lowest_word.length() > 0)
+        {
+            Boolean bl_MatchFound = false;
+
+            //Check for existing responses to phrases using the topic
+            List<String> info = Data.pullInfo(lowest_word);
+            if (info.size() > 0)
+            {
+                //If some found, pick one at random
+                Random rand = new Random();
+                int int_random_choice = rand.nextInt(info.size());
+                response = info.get(int_random_choice);
+                bl_MatchFound = true;
+            }
+
+            //If none found, check for conditioned responses
+            if (!bl_MatchFound)
+            {
+                String temp_input = PunctuationFix_ForInput(last_response_thinking);
+                List<String> outputList = Data.getOutputList_NoTopics(temp_input);
+                if (outputList.size() > 0)
+                {
+                    //If some found, pick one at random
+                    Random rand = new Random();
+                    int int_random_choice = rand.nextInt(outputList.size());
+                    response = outputList.get(int_random_choice);
+                    bl_MatchFound = true;
+                }
+            }
+
+            //If none found, procedurally generate a response using the topic
+            if (!bl_MatchFound)
+            {
+                response = GenerateResponse(lowest_word);
+            }
+
+            response = RulesCheck(response);
+
+            if (response.equals(last_response_thinking))
+            {
+                lowest_word = Get_LowestFrequency(wordArray, true);
+                response = GenerateResponse(lowest_word);
+            }
+
+            output = response;
+        }
+        else
+        {
+            output = "";
+        }
+
+        return output;
     }
-    
-    public static void RulesCheck()
-    {   
-    	if (str_response.length() > 1)
-    	{
-    		//Learn which words should be capitalized by example
-    		String[] str_response_check = str_response.split(" ");
+
+    static void ClearLeftovers()
+    {
+        File file = new File(MainActivity.Brain_dir, ".txt");
+        if (file.exists())
+        {
+            file.delete();
+        }
+
+        file = new File(MainActivity.Brain_dir, ",.txt");
+        if (file.exists())
+        {
+            file.delete();
+        }
+
+        file = new File(MainActivity.Brain_dir, "..txt");
+        if (file.exists())
+        {
+            file.delete();
+        }
+    }
+
+    private static String RulesCheck(String input)
+    {
+        String response = input;
+
+        if (response.length() > 1)
+        {
+            //Learn which words should be capitalized by example
+            String[] str_response_check = response.split(" ");
             for (int i = 1; i < str_response_check.length; i++)
             {
                 String str_checked_word = str_response_check[i];
-                if (str_checked_word.equals(null) || str_checked_word.equals(""))
+                if (!str_checked_word.equals(""))
                 {
-                	
-                }
-                else
-                {
-                	char capital_letter = str_checked_word.charAt(0);
+                    char capital_letter = str_checked_word.charAt(0);
                     if (Character.isUpperCase(capital_letter) && !str_checked_word.equals("I"))
                     {
-                        Data.Words.clear();
-                        Data.Frequencies.clear();
-                        Data.getWords();
-                        for (int a = 0; a < Data.getWordDataSet().size(); a++)
+                        List<String> words = new ArrayList<>();
+                        List<Integer> frequencies = new ArrayList<>();
+
+                        List<WordData> data = Data.getWords();
+                        for (int a = 0; a < data.size(); a++)
                         {
-                            Data.Words.add(Data.getWordDataSet().get(a).getWord());
-                            Data.Frequencies.add(Data.getWordDataSet().get(a).getFrequency());
+                            words.add(data.get(a).getWord());
+                            frequencies.add(data.get(a).getFrequency());
                         }
 
                         String str_lower_word = str_checked_word;
                         String str_capital_letter = Character.toString(capital_letter);
                         int int_high_frequency = 0;
                         int int_low_frequency = 0;
-                        List<Integer> Frequency_List = new ArrayList<Integer>();
+                        List<Integer> Frequency_List = new ArrayList<>();
                         str_capital_letter = str_capital_letter.toLowerCase();
                         String str = str_lower_word;
                         StringBuilder sb = new StringBuilder(str).replace(0, 0, "");
-                    	sb.insert(0, str_capital_letter);
-                    	str_lower_word = sb.toString();
+                        sb.insert(0, str_capital_letter);
+                        str_lower_word = sb.toString();
 
-                        for (int b = 0; b < Data.Words.size(); b++)
+                        for (int b = 0; b < words.size(); b++)
                         {
-                            if (Data.Words.get(b).equals(str_lower_word))
+                            if (words.get(b).equals(str_lower_word))
                             {
-                                int_low_frequency = Data.Frequencies.get(b);
+                                int_low_frequency = frequencies.get(b);
                                 Frequency_List.add(int_low_frequency);
                             }
-                            else if (Data.Words.get(b).equals(str_checked_word))
+                            else if (words.get(b).equals(str_checked_word))
                             {
-                                int_high_frequency = Data.Frequencies.get(b);
+                                int_high_frequency = frequencies.get(b);
                                 Frequency_List.add(int_high_frequency);
                             }
                         }
 
-                        if (GetMax(Frequency_List) == int_low_frequency)
+                        if (Frequency_List.size() > 0)
                         {
-                            str_response_check[i] = str_lower_word;
-                        }
-                        else if (GetMax(Frequency_List) == int_high_frequency)
-                        {
-                            str_response_check[i] = str_checked_word;
+                            if (GetMax(Frequency_List) == int_low_frequency)
+                            {
+                                str_response_check[i] = str_lower_word;
+                            }
+                            else if (GetMax(Frequency_List) == int_high_frequency)
+                            {
+                                str_response_check[i] = str_checked_word;
+                            }
                         }
                     }
                 }
             }
             String str_new_response = "";
-            
-            for (int i = 0; i < str_response_check.length; i++)
+
+            for (String word : str_response_check)
             {
-                str_new_response += str_response_check[i] + " ";
+                str_new_response += word + " ";
             }
-            str_response = str_new_response;
-            
+            response = str_new_response;
+
             //Remove any spaces before commas
-            while (str_response.contains(" ,"))
+            while (response.contains(" ,"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" ,"), str_response.indexOf(" ,") + 2, ",");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" ,"), response.indexOf(" ,") + 2, ",");
+                response = sb3.toString();
             }
 
             //Remove any spaces before colons
-            while (str_response.contains(" :"))
+            while (response.contains(" :"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" :"), str_response.indexOf(" :") + 2, ":");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" :"), response.indexOf(" :") + 2, ":");
+                response = sb3.toString();
             }
 
             //Remove any spaces before semicolons
-            while (str_response.contains(" ;"))
+            while (response.contains(" ;"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" ;"), str_response.indexOf(" ;") + 2, ";");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" ;"), response.indexOf(" ;") + 2, ";");
+                response = sb3.toString();
             }
-            
-            //Make sure the first word is capitalized
-            char first_letter = str_response.charAt(0);
-            if (Character.isUpperCase(first_letter))
-            {
 
-            }
-            else
-            {            
+            //Make sure the first word is capitalized
+            char first_letter = response.charAt(0);
+            if (!Character.isUpperCase(first_letter))
+            {
                 String str_capital_letter = Character.toString(first_letter);
                 str_capital_letter = str_capital_letter.toUpperCase();
-                String str2 = str_response;
+                String str2 = response;
                 StringBuilder sb2 = new StringBuilder(str2).delete(0, 1);
                 sb2.insert(0, str_capital_letter);
-                str_response = sb2.toString();
+                response = sb2.toString();
             }
-            
+
             //Remove any empty spaces at the end
-            String str2 = str_response;
-            StringBuilder sb2 = new StringBuilder(str2).delete(0, str_response.length() - 1);
-        	char last_letter = sb2.charAt(0);
+            String str2 = response;
+            StringBuilder sb2 = new StringBuilder(str2).delete(0, response.length() - 1);
+            char last_letter = sb2.charAt(0);
             String str_last_letter = Character.toString(last_letter);
-            
+
             while (str_last_letter.equals(" "))
-            {            
-            	String str3 = str_response;
-            	StringBuilder sb3 = new StringBuilder(str3).delete(str_response.length() - 1, str_response.length());
-                str_response = sb3.toString();
-                
-                String str4 = str_response;
-                StringBuilder sb4 = new StringBuilder(str4).delete(0, str_response.length() - 1);
+            {
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).delete(response.length() - 1, response.length());
+                response = sb3.toString();
+
+                String str4 = response;
+                StringBuilder sb4 = new StringBuilder(str4).delete(0, response.length() - 1);
                 last_letter = sb4.charAt(0);
-                
+
                 str_last_letter = Character.toString(last_letter);
             }
-            
+
             //Set an ending punctuation if one does not exist
             if (!str_last_letter.equals(".") && !str_last_letter.equals("$") && !str_last_letter.equals("!"))
             {
-            	String str3 = str_response;
-            	StringBuilder sb3 = new StringBuilder(str3).insert(str_response.length(), ".");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).insert(response.length(), ".");
+                response = sb3.toString();
             }
-            
+
             //Learn the best ending punctuation from example
-            if (str_response.endsWith("$") || str_response.endsWith(".") || str_response.endsWith("!"))
+            if (response.endsWith("$") || response.endsWith(".") || response.endsWith("!"))
             {
-	            Data.getInputList();
-	            if (Data.InputList.size() > 0)
-	            {
-	            	int q_count = 0;
-		            int p_count = 0;
-		            int e_count = 0;
-		            for (int i = 0; i < Data.InputList.size(); i++)
-		            {
-		            	String CurrentSentence = Data.InputList.get(i);
-		            	String[] str_currentwords_check = CurrentSentence.split(" ");
-		            	String[] str_response_check2 = str_response.split(" ");
-		            	if (str_currentwords_check[0].toString().equals(str_response_check2[0].toString()))
-		            	{
-		            		if (str_currentwords_check[str_currentwords_check.length - 1].toString().equals("$"))
-		            		{
-		            			q_count++;
-		            		}
-		            		else if (str_currentwords_check[str_currentwords_check.length - 1].toString().equals("."))
-		            		{
-		            			p_count++;
-		            		}
-		            		else if (str_currentwords_check[str_currentwords_check.length - 1].toString().equals("!"))
-		            		{
-		            			e_count++;
-		            		}
-		            	}
-		            }
-		            
-		            if (q_count > p_count && q_count > e_count)
-		            {
-		            	String str3 = str_response;
-		                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.length() - 1, str_response.length(), "$");
-		                str_response = sb3.toString();
-		            }
-		            else if (p_count > q_count && p_count > e_count)
-		            {
-		            	String str3 = str_response;
-		                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.length() - 1, str_response.length(), ".");
-		                str_response = sb3.toString();
-		            }
-		            else if (e_count > q_count && e_count > p_count)
-		            {
-		            	String str3 = str_response;
-		                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.length() - 1, str_response.length(), "!");
-		                str_response = sb3.toString();
-		            }
-	            }
+                List<String> inputList = Data.getInputList();
+                if (inputList.size() > 0)
+                {
+                    int q_count = 0;
+                    int p_count = 0;
+                    int e_count = 0;
+
+                    for (int i = 0; i < inputList.size(); i++)
+                    {
+                        String CurrentSentence = inputList.get(i);
+                        String[] str_currentwords_check = CurrentSentence.split(" ");
+                        String[] str_response_check2 = response.split(" ");
+
+                        if (str_currentwords_check.length > 0 && str_response_check2.length > 0)
+                        {
+                            if (str_currentwords_check[0].equals(str_response_check2[0]))
+                            {
+                                switch (str_currentwords_check[str_currentwords_check.length - 1])
+                                {
+                                    case "$":
+                                        q_count++;
+                                        break;
+                                    case ".":
+                                        p_count++;
+                                        break;
+                                    case "!":
+                                        e_count++;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (q_count > p_count && q_count > e_count)
+                    {
+                        String str3 = response;
+                        StringBuilder sb3 = new StringBuilder(str3).replace(response.length() - 1, response.length(), "$");
+                        response = sb3.toString();
+                    }
+                    else if (p_count > q_count && p_count > e_count)
+                    {
+                        String str3 = response;
+                        StringBuilder sb3 = new StringBuilder(str3).replace(response.length() - 1, response.length(), ".");
+                        response = sb3.toString();
+                    }
+                    else if (e_count > q_count && e_count > p_count)
+                    {
+                        String str3 = response;
+                        StringBuilder sb3 = new StringBuilder(str3).replace(response.length() - 1, response.length(), "!");
+                        response = sb3.toString();
+                    }
+                }
             }
-            
+
             //Replace any dollar signs with question marks
-            while (str_response.contains("$"))
+            while (response.contains("$"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf("$"), str_response.indexOf("$") + 1, "?");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf("$"), response.indexOf("$") + 1, "?");
+                response = sb3.toString();
             }
-            
+
             //Remove any spaces before ending punctuation
-            while (str_response.contains(" ."))
+            while (response.contains(" ."))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" ."), str_response.indexOf(" .") + 2, ".");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" ."), response.indexOf(" .") + 2, ".");
+                response = sb3.toString();
             }
-            while (str_response.contains(" ?"))
+            while (response.contains(" ?"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" ?"), str_response.indexOf(" ?") + 2, "?");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" ?"), response.indexOf(" ?") + 2, "?");
+                response = sb3.toString();
             }
-            while (str_response.contains(" !"))
+            while (response.contains(" !"))
             {
-            	String str3 = str_response;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_response.indexOf(" !"), str_response.indexOf(" !") + 2, "!");
-                str_response = sb3.toString();
+                String str3 = response;
+                StringBuilder sb3 = new StringBuilder(str3).replace(response.indexOf(" !"), response.indexOf(" !") + 2, "!");
+                response = sb3.toString();
             }
-    	}
+        }
+
+        return response;
     }
-    
-    public static void HistoryRules()
-    {   
-    	if (str_History.length() > 1 && !str_History.equals(""))
-    	{           
+
+    static String HistoryRules(String old_string)
+    {
+        String new_string = old_string;
+
+        if (new_string.length() > 1 && !new_string.equals(""))
+        {
             //Remove any spaces before commas
-    		while (str_History.contains(" ,"))
+            while (new_string.contains(" ,"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" ,"), str_History.indexOf(" ,") + 2, ",");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" ,"), new_string.indexOf(" ,") + 2, ",");
+                new_string = sb3.toString();
             }
 
             //Remove any spaces before colons
-    		while (str_History.contains(" :"))
+            while (new_string.contains(" :"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" :"), str_History.indexOf(" :") + 2, ":");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" :"), new_string.indexOf(" :") + 2, ":");
+                new_string = sb3.toString();
             }
 
             //Remove any spaces before semicolons
-    		while (str_History.contains(" ;"))
+            while (new_string.contains(" ;"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" ;"), str_History.indexOf(" ;") + 2, ";");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" ;"), new_string.indexOf(" ;") + 2, ";");
+                new_string = sb3.toString();
             }
-            
-            //Make sure the first word is capitalized
-            char first_letter = str_History.charAt(0);
-            if (Character.isUpperCase(first_letter))
-            {
 
-            }
-            else
-            {            
+            //Make sure the first word is capitalized
+            char first_letter = new_string.charAt(0);
+            if (!Character.isUpperCase(first_letter))
+            {
                 String str_capital_letter = Character.toString(first_letter);
                 str_capital_letter = str_capital_letter.toUpperCase();
-                String str2 = str_History;
+                String str2 = new_string;
                 StringBuilder sb2 = new StringBuilder(str2).delete(0, 1);
                 sb2.insert(0, str_capital_letter);
-                str_History = sb2.toString();
+                new_string = sb2.toString();
             }
-            
-            //Remove any empty spaces at the end       
-            String str2 = str_History;
-            StringBuilder sb2 = new StringBuilder(str2).delete(0, str_History.length() - 1);
-        	char last_letter = sb2.charAt(0);
+
+            //Remove any empty spaces at the end
+            String str2 = new_string;
+            StringBuilder sb2 = new StringBuilder(str2).delete(0, new_string.length() - 1);
+            char last_letter = sb2.charAt(0);
             String str_last_letter = Character.toString(last_letter);
-            
+
             while (str_last_letter.equals(" "))
-            {            
-            	String str3 = str_History;
-            	StringBuilder sb3 = new StringBuilder(str3).delete(str_History.length() - 1, str_History.length());
-            	str_History = sb3.toString();
-                
-                String str4 = str_History;
-                StringBuilder sb4 = new StringBuilder(str4).delete(0, str_History.length() - 1);
+            {
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).delete(new_string.length() - 1, new_string.length());
+                new_string = sb3.toString();
+
+                String str4 = new_string;
+                StringBuilder sb4 = new StringBuilder(str4).delete(0, new_string.length() - 1);
                 last_letter = sb4.charAt(0);
-                
+
                 str_last_letter = Character.toString(last_letter);
             }
-            
+
             //Set an ending punctuation if one does not exist
-            if (!str_last_letter.equals(".") && !str_last_letter.equals("$") && !str_last_letter.equals("!"))
+            if (!str_last_letter.equals(".") && !str_last_letter.equals("$") && !str_last_letter.equals("!") && !str_last_letter.equals("?"))
             {
-            	String str3 = str_History;
-            	StringBuilder sb3 = new StringBuilder(str3).insert(str_History.length(), ".");
-            	str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).insert(new_string.length(), ".");
+                new_string = sb3.toString();
             }
-                       
+
             //Replace any dollar signs with question marks
-            while (str_History.contains("$"))
+            while (new_string.contains("$"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf("$"), str_History.indexOf("$") + 1, "?");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf("$"), new_string.indexOf("$") + 1, "?");
+                new_string = sb3.toString();
             }
-            
+
             //Remove any spaces before ending punctuation
-            while (str_History.contains(" ."))
+            while (new_string.contains(" ."))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" ."), str_History.indexOf(" .") + 2, ".");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" ."), new_string.indexOf(" .") + 2, ".");
+                new_string = sb3.toString();
             }
-            while (str_History.contains(" ?"))
+            while (new_string.contains(" ?"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" ?"), str_History.indexOf(" ?") + 2, "?");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" ?"), new_string.indexOf(" ?") + 2, "?");
+                new_string = sb3.toString();
             }
-            while (str_History.contains(" !"))
+            while (new_string.contains(" !"))
             {
-            	String str3 = str_History;
-                StringBuilder sb3 = new StringBuilder(str3).replace(str_History.indexOf(" !"), str_History.indexOf(" !") + 2, "!");
-                str_History = sb3.toString();
+                String str3 = new_string;
+                StringBuilder sb3 = new StringBuilder(str3).replace(new_string.indexOf(" !"), new_string.indexOf(" !") + 2, "!");
+                new_string = sb3.toString();
             }
-    	}
+        }
+
+        return new_string;
     }
 }

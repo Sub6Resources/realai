@@ -12,549 +12,635 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class Data 
+class Data
 {
-	//Variables
-	private static List<WordData> WordDataSet = new ArrayList<WordData>();
-	public static List<String> Words = new ArrayList<String>();
-	public static List<Integer> Frequencies = new ArrayList<Integer>();
-	public static List<String> InputList = new ArrayList<String>();
-	public static List<String> OutputList = new ArrayList<String>();
-	public static List<String> HistoryList = new ArrayList<String>();
-	public static List<String> ThoughtList = new ArrayList<String>();
-	public static List<String> InformationBank = new ArrayList<String>();
-	
-	//Properties
-	public static List<WordData> getWordDataSet() 
-	{
-		return WordDataSet;
-	}
-
-	public static void setWordDataSet(List<WordData> wordDataSet) 
-	{
-		WordDataSet = wordDataSet;
-	}
-
-	//Words Data
-	public static void saveWords() throws IOException
+    //Words Data
+    static void saveWords(List<WordData> data)
     {
-    	BufferedWriter writer = null;
-        try 
+        BufferedWriter writer;
+        try
         {
-        	File file = new File(MainActivity.Brain_dir, "Words.txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-        	String WordsLine = "";
-        	
-        	for (int i = 0; i < getWordDataSet().size(); i++)
+            File file = new File(MainActivity.Brain_dir, "Words.txt");
+            if (!file.exists())
             {
-                WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString() + "\n";
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            String WordsLine;
+
+            for (int i = 0; i < data.size(); i++)
+            {
+                WordsLine = data.get(i).getWord() + "~" + data.get(i).getFrequency().toString() + "\n";
                 writer.write(WordsLine);
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
+            writer.close();
+        }
+        catch(IOException ex)
         {
-        	ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
-	
-	public static void getWords()
-    {
-    	getWordDataSet().clear();
-    	Words.clear();
-    	Frequencies.clear();
-    	String WordSet[];
-    	
-    	File file = new File(MainActivity.Brain_dir, "Words.txt");
-    	
-    	try 
-    	{
-    		BufferedReader br = new BufferedReader(new FileReader(file));
 
-    		String line = "";
-    		while ((line = br.readLine()) != null) 
-    		{
-    			if (line.contains("~"))
-    	        {
-    	            WordSet = line.split("~");
-    	            Words.add(WordSet[0].toString());
-    	            Frequencies.add(Integer.parseInt(WordSet[1]));
-    	        }
-    		}
-    		for (int i = 0; i < Words.size(); i++)
-            {
-        		WordData newset = new WordData();
-    			newset.setWord(Words.get(i));
-    			newset.setFrequency(Frequencies.get(i));
-                getWordDataSet().add(newset);
-            }
-    		br.close();
-    	}
-    	catch (IOException e)
-    	{
-    		e.printStackTrace();
-    	}
-    }
-	
-	//PreWords Data
-    public static void savePreWords(String word) throws IOException
+    static List<WordData> getWords()
     {
-    	BufferedWriter writer = null;
-        try 
+        List<String> words = new ArrayList<>();
+        List<Integer> frequencies = new ArrayList<>();
+        List<WordData> data = new ArrayList<>();
+
+        String WordSet[];
+
+        File file = new File(MainActivity.Brain_dir, "Words.txt");
+
+        try
         {
-        	File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-        	String WordsLine = "";
-        	String[] WordSet = new String[getWordDataSet().size()];
-        	
-        	for (int i = 0; i < getWordDataSet().size(); i++)
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            while ((line = br.readLine()) != null)
             {
-        		WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString();
-                WordSet[i] = WordsLine;
+                if (line.contains("~"))
+                {
+                    WordSet = line.split("~");
+                    words.add(WordSet[0]);
+                    frequencies.add(Integer.parseInt(WordSet[1]));
+                }
+            }
+            for (int i = 0; i < words.size(); i++)
+            {
+                WordData newset = new WordData();
+                newset.setWord(words.get(i));
+                newset.setFrequency(frequencies.get(i));
+                data.add(newset);
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    //PreWords Data
+    static void savePreWords(List<WordData> data, String word)
+    {
+        BufferedWriter writer;
+        try
+        {
+            File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            String WordsLine;
+
+            for (int i = 0; i < data.size(); i++)
+            {
+                WordsLine = data.get(i).getWord() + "~" + data.get(i).getFrequency().toString();
                 writer.write(WordsLine);
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
+            writer.close();
+        }
+        catch(IOException ex)
         {
-        	ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
-    
-    public static void getPreWords(String word)
+
+    static List<WordData> getPreWords(String word)
     {
-    	getWordDataSet().clear();
-    	Words.clear();
-    	Frequencies.clear();
-    	String WordSet[];
-    	File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
-    	
-    	if (file.isFile())
-    	{
-	    	try 
-	    	{
-	    		BufferedReader br = new BufferedReader(new FileReader(file));
-	
-	    		String line = "";
-	    		while ((line = br.readLine()) != null) 
-	    		{
-	    			if (line.contains("~"))
-	    	        {
-	    	            WordSet = line.split("~");
-	    	            Words.add(WordSet[0].toString());
-	    	            Frequencies.add(Integer.parseInt(WordSet[1]));
-	    	        }
-	    		}
-	    		for (int i = 0; i < Words.size(); i++)
-	            {
-	        		WordData newset = new WordData();
-	    			newset.setWord(Words.get(i));
-	    			newset.setFrequency(Frequencies.get(i));
-	                getWordDataSet().add(newset);
-	            }
-	    		br.close();
-	    	}
-	    	catch (IOException e)
-	    	{
-	    		e.printStackTrace();
-	    	}
-    	}
-    	else
-    	{
-    		BufferedWriter writer = null;
-            try 
+        List<String> words = new ArrayList<>();
+        List<Integer> frequencies = new ArrayList<>();
+        List<WordData> data = new ArrayList<>();
+
+        String WordSet[];
+        File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
+
+        if (file.isFile())
+        {
+            try
             {
-            	writer = new BufferedWriter(new FileWriter(file));
-            	String WordsLine = "";
-            	writer.write(WordsLine);
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("~"))
+                    {
+                        WordSet = line.split("~");
+                        words.add(WordSet[0]);
+                        frequencies.add(Integer.parseInt(WordSet[1]));
+                    }
+                }
+                for (int i = 0; i < words.size(); i++)
+                {
+                    WordData newset = new WordData();
+                    newset.setWord(words.get(i));
+                    newset.setFrequency(frequencies.get(i));
+                    data.add(newset);
+                }
+
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
                 writer.newLine();
                 writer.close();
-            } 
-            catch(IOException ex) 
-            {
-            	ex.printStackTrace();
-            } 
-    	}
-    }
-    
-  //ProWords Data
-    public static void saveProWords(String word) throws IOException
-    {
-    	BufferedWriter writer = null;
-        try 
-        {
-        	File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
             }
-        	writer = new BufferedWriter(new FileWriter(file));
-        	String WordsLine = "";
-        	String[] WordSet = new String[getWordDataSet().size()];
-        	
-        	for (int i = 0; i < getWordDataSet().size(); i++)
+            catch(IOException ex)
             {
-        		WordsLine = getWordDataSet().get(i).getWord() + "~" + getWordDataSet().get(i).getFrequency().toString();
-                WordSet[i] = WordsLine;
+                ex.printStackTrace();
+            }
+        }
+
+        return data;
+    }
+
+    //ProWords Data
+    static void saveProWords(List<WordData> data, String word)
+    {
+        BufferedWriter writer;
+        try
+        {
+            File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            String WordsLine;
+
+            for (int i = 0; i < data.size(); i++)
+            {
+                WordsLine = data.get(i).getWord() + "~" + data.get(i).getFrequency().toString();
                 writer.write(WordsLine);
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
+            writer.close();
+        }
+        catch(IOException ex)
         {
-        	ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
 
-    public static void getProWords(String word)
+    static List<WordData> getProWords(String word)
     {
-    	getWordDataSet().clear();
-    	Words.clear();
-    	Frequencies.clear();
-    	String WordSet[];
-    	File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
-    	
-    	if (file.isFile())
-    	{
-	    	try 
-	    	{
-	    		BufferedReader br = new BufferedReader(new FileReader(file));
-	
-	    		String line = "";
-	    		while ((line = br.readLine()) != null) 
-	    		{
-	    			if (line.contains("~"))
-	    	        {
-	    	            WordSet = line.split("~");
-	    	            Words.add(WordSet[0].toString());
-	    	            Frequencies.add(Integer.parseInt(WordSet[1]));
-	    	        }
-	    		}
-	    		for (int i = 0; i < Words.size(); i++)
-	            {
-	        		WordData newset = new WordData();
-	    			newset.setWord(Words.get(i));
-	    			newset.setFrequency(Frequencies.get(i));
-	                getWordDataSet().add(newset);
-	            }
-	    		br.close();
-	    	}
-	    	catch (IOException e)
-	    	{
-	    		e.printStackTrace();
-	    	}
-    	}
-    	else
-    	{
-    		BufferedWriter writer = null;
-            try 
+        List<String> words = new ArrayList<>();
+        List<Integer> frequencies = new ArrayList<>();
+        List<WordData> data = new ArrayList<>();
+
+        String WordSet[];
+        File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
+
+        if (file.isFile())
+        {
+            try
             {
-            	writer = new BufferedWriter(new FileWriter(file));
-            	String WordsLine = "";
-            	writer.write(WordsLine);
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("~"))
+                    {
+                        WordSet = line.split("~");
+                        words.add(WordSet[0]);
+                        frequencies.add(Integer.parseInt(WordSet[1]));
+                    }
+                }
+                for (int i = 0; i < words.size(); i++)
+                {
+                    WordData newset = new WordData();
+                    newset.setWord(words.get(i));
+                    newset.setFrequency(frequencies.get(i));
+                    data.add(newset);
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
                 writer.newLine();
                 writer.close();
-            } 
-            catch(IOException ex) 
+            }
+            catch(IOException ex)
             {
-            	ex.printStackTrace();
-            } 
-    	}
+                ex.printStackTrace();
+            }
+        }
+
+        return data;
     }
 
     //Input Data
-    public static void saveInputList() throws IOException
+    static void saveInputList(List<String> input)
     {
-    	BufferedWriter writer = null;
-        try 
+        BufferedWriter writer;
+        try
         {
-        	File file = new File(MainActivity.Brain_dir, "InputList.txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-
-        	for (int i = 0; i < InputList.size(); i++)
+            File file = new File(MainActivity.Brain_dir, "InputList.txt");
+            if (!file.exists())
             {
-                writer.write(InputList.get(i));
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+
+            for (int i = 0; i < input.size(); i++)
+            {
+                writer.write(input.get(i));
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
+            writer.close();
+        }
+        catch(IOException ex)
         {
-        	ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
-    
-    public static void getInputList()
-    {
-    	InputList.clear();
-    	
-    	try 
-    	{
-    		File file = new File(MainActivity.Brain_dir, "InputList.txt");
-    		BufferedReader br = new BufferedReader(new FileReader(file));
 
-    		String line = "";
-    		while ((line = br.readLine()) != null) 
-    		{
-    			if (!line.equals(""))
-    			{
-    				InputList.add(line);
-    			}
-    		}
-    		br.close();
-    	}
-    	catch (IOException e)
-    	{
-    		e.printStackTrace();
-    	}
+    static List<String> getInputList()
+    {
+        List<String> input = new ArrayList<>();
+
+        try
+        {
+            File file = new File(MainActivity.Brain_dir, "InputList.txt");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                if (!line.equals(""))
+                {
+                    input.add(line);
+                }
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return input;
     }
-    
+
     //Output Data
-    public static void saveOutput(String input)
+    static void saveOutput(List<String> output, String input)
     {
-    	BufferedWriter writer = null;
-        try 
+        BufferedWriter writer;
+        try
         {
-        	File file = new File(MainActivity.Brain_dir, input + ".txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-
-        	for (int i = 0; i < OutputList.size(); i++)
+            File file = new File(MainActivity.Brain_dir, input + ".txt");
+            if (!file.exists())
             {
-                writer.write(OutputList.get(i));
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+
+            for (int i = 0; i < output.size(); i++)
+            {
+                writer.write(output.get(i));
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
+            writer.close();
+        }
+        catch(IOException ex)
         {
-        	ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
-    
-    public static void getOutputList(String input)
-    {
-    	OutputList.clear();
-    	
-    	File file = new File(MainActivity.Brain_dir, input + ".txt");
-    	
-    	if (file.isFile())
-    	{
-    		try 
-        	{
-        		BufferedReader br = new BufferedReader(new FileReader(file));
 
-        		String line = "";
-        		while ((line = br.readLine()) != null) 
-        		{
-        			if (!line.equals(""))
-        			{
-        				OutputList.add(line);
-        			}
-        		}
-        		br.close();
-        	}
-        	catch (IOException e)
-        	{
-        		e.printStackTrace();
-        	}
-    	}
-    	else
-    	{
-    		BufferedWriter writer = null;
-            try 
+    static List<String> getOutputList(String input)
+    {
+        List<String> output = new ArrayList<>();
+
+        File file = new File(MainActivity.Brain_dir, input + ".txt");
+
+        if (file.isFile())
+        {
+            try
             {
-            	writer = new BufferedWriter(new FileWriter(file));
-            	String WordsLine = "";
-            	writer.write(WordsLine);
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (!line.equals(""))
+                    {
+                        output.add(line);
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
                 writer.newLine();
                 writer.close();
-            } 
-            catch(IOException ex) 
+            }
+            catch(IOException ex)
             {
-            	ex.printStackTrace();
-            } 
-    	}
+                ex.printStackTrace();
+            }
+        }
+
+        return output;
     }
-    
+
+    static List<String> getOutputList_NoTopics(String input)
+    {
+        List<String> output = new ArrayList<>();
+
+        File file = new File(MainActivity.Brain_dir, input + ".txt");
+
+        if (file.isFile())
+        {
+            try
+            {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (!line.equals("") && !line.contains("~"))
+                    {
+                        output.add(line);
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
+                writer.newLine();
+                writer.close();
+            }
+            catch(IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        return output;
+    }
+
+    private static String getTopic(String input)
+    {
+        String result = "";
+
+        File file = new File(MainActivity.Brain_dir, input + ".txt");
+
+        if (file.isFile())
+        {
+            try
+            {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("~"))
+                    {
+                        result = line.substring(1, line.length());
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
     //History Data
-    public static void saveHistory() throws IOException
+    static void saveHistory(List<String> history)
     {
-    	BufferedWriter writer = null;
-    	DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-    	String currentDate = f.format(new Date());
-    	
-        try 
+        BufferedWriter writer;
+        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+        String currentDate = f.format(new Date());
+
+        try
         {
-        	File file = new File(MainActivity.History_dir, currentDate + ".txt");
-        	if (!file.exists()) 
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-        	
-        	for (int i = 0; i < HistoryList.size(); i++)
+            File file = new File(MainActivity.History_dir, currentDate + ".txt");
+            if (!file.exists())
             {
-                writer.write(HistoryList.get(i));
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+
+            for (int i = 0; i < history.size(); i++)
+            {
+                writer.write(history.get(i));
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
-        {
-        	ex.printStackTrace();
+            writer.close();
         }
-    }    
-    
-    public static void getHistory()
-    {
-    	HistoryList.clear();
-    	
-    	DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-    	String currentDate = f.format(new Date());
-    	File file = new File(MainActivity.History_dir, currentDate + ".txt");
-    	
-    	if (!file.exists())
-    	{
-    		try
-    		{
-				saveHistory();
-			}
-    		catch (IOException e)
-    		{
-				e.printStackTrace();
-			}
-    	}
-    	
-    	try 
-    	{
-    		BufferedReader br = new BufferedReader(new FileReader(file));
-
-    		String line = "";
-    		while ((line = br.readLine()) != null) 
-    		{
-    			if (!line.equals(""))
-    			{
-    				HistoryList.add(line);
-    			}
-    		}
-    		br.close();
-    	}
-    	catch (IOException e)
-    	{
-    		e.printStackTrace();
-    	}
-    }
-    
-  //Thought Data
-    public static void saveThoughts() throws IOException
-    {
-    	BufferedWriter writer = null;
-    	DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-    	String currentDate = f.format(new Date());
-    	
-        try 
+        catch(IOException ex)
         {
-        	File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
-        	if (!file.exists())
-            {    
-        		file.createNewFile();
-            }
-        	writer = new BufferedWriter(new FileWriter(file));
-        	
-        	for (int i = 0; i < ThoughtList.size(); i++)
+            ex.printStackTrace();
+        }
+    }
+
+    static List<String> getHistory()
+    {
+        List<String> history = new ArrayList<>();
+
+        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+        String currentDate = f.format(new Date());
+        File file = new File(MainActivity.History_dir, currentDate + ".txt");
+
+        if (file.isFile())
+        {
+            try
             {
-                writer.write(ThoughtList.get(i));
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (!line.equals(""))
+                    {
+                        history.add(line);
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
+                writer.newLine();
+                writer.close();
+            }
+            catch(IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        return history;
+    }
+
+    //Thought Data
+    static void saveThoughts(List<String> thoughts)
+    {
+        BufferedWriter writer;
+        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+        String currentDate = f.format(new Date());
+
+        try
+        {
+            File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+
+            for (int i = 0; i < thoughts.size(); i++)
+            {
+                writer.write(thoughts.get(i));
                 writer.newLine();
             }
-        	writer.close();
-        } 
-        catch(IOException ex) 
-        {
-        	ex.printStackTrace();
+            writer.close();
         }
-    }    
-    
-    public static void getThoughts()
-    {
-    	ThoughtList.clear();
-    	
-    	DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
-    	String currentDate = f.format(new Date());
-    	File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
-    	
-    	if (!file.exists())
-    	{
-    		try
-    		{
-				saveHistory();
-			}
-    		catch (IOException e)
-    		{
-				e.printStackTrace();
-			}
-    	}
-    	
-    	try 
-    	{
-    		BufferedReader br = new BufferedReader(new FileReader(file));
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
 
-    		String line = "";
-    		while ((line = br.readLine()) != null) 
-    		{
-    			if (!line.equals(""))
-    			{
-    				ThoughtList.add(line);
-    			}
-    		}
-    		br.close();
-    	}
-    	catch (IOException e)
-    	{
-    		e.printStackTrace();
-    	}
-    }
-    
-    public static void pullInfo(String topic)
+    static List<String> getThoughts()
     {
-    	Data.getInputList();
-    	InformationBank.clear();
-    	
-    	if (Data.InputList.size() > 0)
-    	{
-	    	for (int a = 0; a < Data.InputList.size(); a++)
-	    	{
-	    		if (Data.InputList.get(a).contains(topic))
-	    		{
-	    			Data.getOutputList(Data.InputList.get(a));
-	    			if (Data.OutputList.size() > 0)
-	    			{
-		    			for (int b = 0; b < Data.OutputList.size(); b++)
-		    			{
-		    				InformationBank.add(Data.OutputList.get(b));
-		    			}
-	    			}
-	    		}
-	    	}
-    	}
+        List<String> thoughts = new ArrayList<>();
+
+        DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
+        String currentDate = f.format(new Date());
+        File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
+
+        if (file.isFile())
+        {
+            try
+            {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (!line.equals(""))
+                    {
+                        thoughts.add(line);
+                    }
+                }
+                br.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            BufferedWriter writer;
+            try
+            {
+                writer = new BufferedWriter(new FileWriter(file));
+                String WordsLine = "";
+                writer.write(WordsLine);
+                writer.newLine();
+                writer.close();
+            }
+            catch(IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        return thoughts;
     }
-    
+
+    static List<String> pullInfo(String topic)
+    {
+        List<String> input = getInputList();
+        List<String> info = new ArrayList<>();
+
+        if (input.size() > 0)
+        {
+            for (int a = 0; a < input.size(); a++)
+            {
+                String result = getTopic(input.get(a));
+                if (result.equals(topic))
+                {
+                    List<String> output = getOutputList_NoTopics(input.get(a));
+                    for (int b = 0; b < output.size(); b++)
+                    {
+                        info.add(output.get(b));
+                    }
+                }
+            }
+        }
+
+        return info;
+    }
+
+
 }

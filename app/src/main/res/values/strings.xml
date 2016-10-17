@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Real AI (text)</string>
     <string name="enter_button">Enter</string>
+    <string name="back_button">Back</string>
     <string name="erase_memory">Erase Memory</string>
     <string name="exit_app">Exit</string>
     <item name="activityRoot" type="id"/>
@@ -9,4 +10,5 @@
     <string name="word_fix">Word Fix</string>
     <string name="btn_accept">Accept</string>
     <string name="thinking">(thinking…)</string>
+    <string name="setdelay">Set Delay</string>
 </resources>

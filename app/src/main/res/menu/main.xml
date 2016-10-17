@@ -1,6 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/erase_memory" android:orderInCategory="3" android:title="@string/erase_memory"/>
     <item android:id="@+id/exit_app" android:orderInCategory="1" android:title="@string/exit_app"/>
-    <item android:id="@+id/thought_log" android:orderInCategory="2" android:title="@string/thought_log"/>
-    <item android:id="@+id/word_fix" android:orderInCategory="4" android:title="@string/word_fix"/>
+    <item android:id="@+id/setdelay" android:orderInCategory="2" android:title="@string/setdelay"/>
+    <item android:id="@+id/thought_log" android:orderInCategory="3" android:title="@string/thought_log"/>
+    <item android:id="@+id/erase_memory" android:orderInCategory="4" android:title="@string/erase_memory"/>
+    <item android:id="@+id/word_fix" android:orderInCategory="5" android:title="@string/word_fix"/>
 </menu>

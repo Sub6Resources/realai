@@ -47,6 +47,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private int int_Time = 10000;
     private int int_Delay = 0;
     private int wordfix_selection = 0;
+    int delay_selection = 0;
     private EditText Output = null;
     private EditText Input = null;
     private EditText txt_WordFix = null;
@@ -58,6 +59,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Boolean bl_Ready = false;
     private Boolean bl_Thought = false;
     private Boolean bl_WordFix = false;
+    private Boolean bl_Delay = false;
+    private Boolean bl_DelayForever = false;
     public static final File Brain_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/" );
     public static final File History_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/History/" );
     public static final File Thought_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/Thoughts/" );
@@ -238,7 +241,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         {
             CloseThought();
         }
-        else if (bl_WordFix)
+        else if (bl_WordFix ||
+                 bl_Delay)
         {
             CloseWordFix();
         }
@@ -258,7 +262,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             {
                 int_Delay++;
             }
-            else if (int_Delay == 1)
+            else if (int_Delay == 1 &&
+                     !bl_DelayForever)
             {
                 AttentionSpan();
                 int_Delay = 0;
@@ -344,15 +349,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
 
             ScrollHistory();
-
-            int_Time = 10000;
         }
     }
 
     //After Enter
     public void onSend(View view)
     {
-        if (bl_WordFix)
+        if (bl_WordFix ||
+            bl_Delay)
         {
             CloseWordFix();
         }
@@ -386,7 +390,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
                 Logic.ClearLeftovers();
                 Input.setText("");
-                int_Time = 10000;
             }
         }
     }
@@ -621,25 +624,25 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         if (!bl_Thought)
         {
-            if (!bl_WordFix)
+            if (!bl_WordFix && !bl_Delay)
             {
                 Output.setVisibility(View.VISIBLE);
                 Input.setVisibility(View.VISIBLE);
                 btn_Menu.setVisibility(View.VISIBLE);
 
-                btn_Enter.setText("Enter");
+                btn_Enter.setText(R.string.enter_button);
                 btn_Enter.setVisibility(View.VISIBLE);
                 startTimer();
             }
             else
             {
-                btn_Enter.setText("Back");
+                btn_Enter.setText(R.string.back_button);
                 btn_Enter.setVisibility(View.VISIBLE);
             }
         }
         else
         {
-            btn_Enter.setText("Back");
+            btn_Enter.setText(R.string.back_button);
             btn_Enter.setVisibility(View.VISIBLE);
             Output.setVisibility(View.VISIBLE);
         }
@@ -697,6 +700,31 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
                 return true;
 
+            case R.id.setdelay:
+                //Set Spinner
+                List<String> delays = new ArrayList<>();
+                delays.add("10 seconds");
+                delays.add("20 seconds");
+                delays.add("30 seconds");
+                delays.add("Infinite");
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, delays);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                sp_WordFix.setAdapter(adapter);
+                sp_WordFix.setSelection(0);
+                sp_WordFix.setVisibility(View.VISIBLE);
+                sp_WordFix.setClickable(true);
+                sp_WordFix.setFocusable(true);
+
+                //Set Button
+                btn_WordFix.setVisibility(View.VISIBLE);
+                btn_WordFix.setClickable(true);
+                btn_WordFix.setFocusable(true);
+
+                stopTimer();
+                bl_Delay = true;
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -712,14 +740,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         }
         fileOrDirectory.delete();
-    }
-
-    private void ReleaseThoughts(File directory)
-    {
-        for (File child : directory.listFiles())
-        {
-            EraseMemory(child);
-        }
     }
 
     private void CleanMemory()
@@ -896,15 +916,22 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
     {
-        List<WordData> data = Data.getWords();
-        List<String> words = new ArrayList<>();
-        for (int i = 0; i < data.size(); i++)
+        if (bl_WordFix)
         {
-            words.add(data.get(i).getWord());
-        }
+            List<WordData> data = Data.getWords();
+            List<String> words = new ArrayList<>();
+            for (int i = 0; i < data.size(); i++)
+            {
+                words.add(data.get(i).getWord());
+            }
 
-        wordfix_selection = parent.getSelectedItemPosition();
-        txt_WordFix.setText(words.get(wordfix_selection));
+            wordfix_selection = parent.getSelectedItemPosition();
+            txt_WordFix.setText(words.get(wordfix_selection));
+        }
+        else if (bl_Delay)
+        {
+            delay_selection = parent.getSelectedItemPosition();
+        }
     }
 
     public void onNothingSelected(AdapterView<?> parent)
@@ -914,81 +941,96 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
     public void WordFix(View view)
     {
-        List<WordData> data = Data.getWords();
-
-        String oldWord = data.get(wordfix_selection).getWord();
-        String newWord = txt_WordFix.getText().toString();
-
-        List<String> input = Data.getInputList();
-        for (int i = 0; i < input.size(); i++)
+        if (bl_WordFix)
         {
-            List<String> output = Data.getOutputList(input.get(i));
-            for (int j = 0; j < output.size(); j++)
+            List<WordData> data = Data.getWords();
+
+            String oldWord = data.get(wordfix_selection).getWord();
+            String newWord = txt_WordFix.getText().toString();
+
+            List<String> input = Data.getInputList();
+            for (int i = 0; i < input.size(); i++)
             {
-                if (output.get(j).contains(oldWord))
+                List<String> output = Data.getOutputList(input.get(i));
+                for (int j = 0; j < output.size(); j++)
                 {
-                    String newOutput = output.get(j).replace(oldWord, newWord);
-                    output.set(j, newOutput);
+                    if (output.get(j).contains(oldWord))
+                    {
+                        String newOutput = output.get(j).replace(oldWord, newWord);
+                        output.set(j, newOutput);
+                    }
                 }
-            }
-            Data.saveOutput(output, input.get(i));
+                Data.saveOutput(output, input.get(i));
 
-            if (input.get(i).contains(oldWord))
-            {
-                String oldPath = input.get(i) + ".txt";
-                String newInput = input.get(i).replace(oldWord, newWord);
-                input.set(i, newInput);
-                File oldFile = new File(MainActivity.Brain_dir, oldPath);
-                File newFile = new File(MainActivity.Brain_dir, input.get(i) + ".txt");
-                oldFile.renameTo(newFile);
-            }
-        }
-        Data.saveInputList(input);
-
-        List<String> words = new ArrayList<>();
-        for (int i = 0; i < data.size(); i++)
-        {
-            words.add(data.get(i).getWord());
-        }
-
-        for (int i = 0; i < words.size(); i++)
-        {
-            data = Data.getPreWords(words.get(i));
-            for (int j = 0; j < data.size(); j++)
-            {
-                if (data.get(j).getWord().equals(oldWord))
+                if (input.get(i).contains(oldWord))
                 {
-                    String oldPath = "Pre-" + data.get(j).getWord() + ".txt";
-                    data.get(j).setWord(newWord);
-                    String newPath = "Pre-" + data.get(j).getWord() + ".txt";
-
+                    String oldPath = input.get(i) + ".txt";
+                    String newInput = input.get(i).replace(oldWord, newWord);
+                    input.set(i, newInput);
                     File oldFile = new File(MainActivity.Brain_dir, oldPath);
-                    File newFile = new File(MainActivity.Brain_dir, newPath);
+                    File newFile = new File(MainActivity.Brain_dir, input.get(i) + ".txt");
                     oldFile.renameTo(newFile);
                 }
             }
-            Data.savePreWords(data, words.get(i));
+            Data.saveInputList(input);
 
-            data = Data.getProWords(words.get(i));
-            for (int j = 0; j < data.size(); j++)
+            List<String> words = new ArrayList<>();
+            for (int i = 0; i < data.size(); i++)
             {
-                if (data.get(j).getWord().equals(oldWord))
-                {
-                    String oldPath = "Pro-" + data.get(j).getWord() + ".txt";
-                    data.get(j).setWord(newWord);
-                    String newPath = "Pro-" + data.get(j).getWord() + ".txt";
-
-                    File oldFile = new File(MainActivity.Brain_dir, oldPath);
-                    File newFile = new File(MainActivity.Brain_dir, newPath);
-                    oldFile.renameTo(newFile);
-                }
+                words.add(data.get(i).getWord());
             }
-            Data.saveProWords(data, words.get(i));
-        }
 
-        data = Data.getWords();
-        data.get(wordfix_selection).setWord(newWord);
-        Data.saveWords(data);
+            for (int i = 0; i < words.size(); i++)
+            {
+                data = Data.getPreWords(words.get(i));
+                for (int j = 0; j < data.size(); j++)
+                {
+                    if (data.get(j).getWord().equals(oldWord))
+                    {
+                        String oldPath = "Pre-" + data.get(j).getWord() + ".txt";
+                        data.get(j).setWord(newWord);
+                        String newPath = "Pre-" + data.get(j).getWord() + ".txt";
+
+                        File oldFile = new File(MainActivity.Brain_dir, oldPath);
+                        File newFile = new File(MainActivity.Brain_dir, newPath);
+                        oldFile.renameTo(newFile);
+                    }
+                }
+                Data.savePreWords(data, words.get(i));
+
+                data = Data.getProWords(words.get(i));
+                for (int j = 0; j < data.size(); j++)
+                {
+                    if (data.get(j).getWord().equals(oldWord))
+                    {
+                        String oldPath = "Pro-" + data.get(j).getWord() + ".txt";
+                        data.get(j).setWord(newWord);
+                        String newPath = "Pro-" + data.get(j).getWord() + ".txt";
+
+                        File oldFile = new File(MainActivity.Brain_dir, oldPath);
+                        File newFile = new File(MainActivity.Brain_dir, newPath);
+                        oldFile.renameTo(newFile);
+                    }
+                }
+                Data.saveProWords(data, words.get(i));
+            }
+
+            data = Data.getWords();
+            data.get(wordfix_selection).setWord(newWord);
+            Data.saveWords(data);
+        }
+        else if (bl_Delay)
+        {
+            if (delay_selection == 3)
+            {
+                bl_DelayForever = true;
+            }
+            else
+            {
+                int_Time = ((delay_selection * 10) + 10) * 1000;
+                bl_DelayForever = false;
+            }
+        }
 
         CloseWordFix();
     }
@@ -1014,7 +1056,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         Output.setVisibility(View.VISIBLE);
         Input.setVisibility(View.VISIBLE);
         btn_Menu.setVisibility(View.VISIBLE);
-        btn_Enter.setText("Enter");
+        btn_Enter.setText(R.string.enter_button);
         btn_Enter.setVisibility(View.VISIBLE);
 
         ScrollHistory();
@@ -1024,6 +1066,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
         bl_WordFix = false;
+        bl_Delay = false;
 
         startTimer();
     }
@@ -1032,7 +1075,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         Input.setVisibility(View.VISIBLE);
         btn_Menu.setVisibility(View.VISIBLE);
-        btn_Enter.setText("Enter");
+        btn_Enter.setText(R.string.enter_button);
         btn_Enter.setVisibility(View.VISIBLE);
 
         ScrollHistory();

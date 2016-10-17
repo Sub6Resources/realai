@@ -2,13 +2,15 @@
     <string name="app_name">Real AI (text)</string>
     <string name="enter_button">Enter</string>
     <string name="back_button">Back</string>
+    <string name="ok_button">OK</string>
     <string name="erase_memory">Erase Memory</string>
     <string name="exit_app">Exit</string>
     <item name="activityRoot" type="id"/>
-    <string name="thought_log">Thoughts</string>
+    <string name="thought_log">View Thinking</string>
     <string name="menu_button">Menu</string>
-    <string name="word_fix">Word Fix</string>
+    <string name="word_fix">Correct Spelling</string>
     <string name="btn_accept">Accept</string>
     <string name="thinking">(thinking…)</string>
     <string name="setdelay">Set Delay</string>
+    <string name="tips">Tips</string>
 </resources>

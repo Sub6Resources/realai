@@ -48,6 +48,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private int int_Delay = 0;
     private int wordfix_selection = 0;
     int delay_selection = 0;
+
     private EditText Output = null;
     private EditText Input = null;
     private EditText txt_WordFix = null;
@@ -55,41 +56,26 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Button btn_WordFix = null;
     private Button btn_Enter = null;
     private Button btn_Menu = null;
-    private Boolean bl_Typing = false;
-    private Boolean bl_Ready = false;
-    private Boolean bl_Thought = false;
-    private Boolean bl_WordFix = false;
-    private Boolean bl_Delay = false;
-    private Boolean bl_DelayForever = false;
+
+    private boolean bl_Typing = false;
+    private boolean bl_Ready = false;
+    private boolean bl_Thought = false;
+    private boolean bl_WordFix = false;
+    private boolean bl_Delay = false;
+    private boolean bl_DelayForever = false;
+    private boolean bl_Tips = false;
+
     public static final File Brain_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/" );
     public static final File History_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/History/" );
     public static final File Thought_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/Thoughts/" );
+
     private Handler handler;
     private boolean KeyboardOpen;
     private View rootView;
     private final int PERMISSION_REQUEST = 123;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState)
+    private void Create_Brain()
     {
-        super.onCreate(savedInstanceState);
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_main);
-
-        Input = (EditText)findViewById(R.id.txt_Input);
-
-        Output = (EditText)findViewById(R.id.txt_Output);
-        Output.setMaxLines(Integer.MAX_VALUE);
-
-        btn_Enter = (Button)findViewById(R.id.btn_Enter);
-        btn_Menu = (Button)findViewById(R.id.btn_Menu);
-        sp_WordFix = (Spinner)findViewById(R.id.sp_WordFix);
-        sp_WordFix.setOnItemSelectedListener(this);
-        txt_WordFix = (EditText)findViewById(R.id.txt_WordFix);
-        btn_WordFix = (Button)findViewById(R.id.btn_WordFix);
-
-        handler = new Handler();
-
         if (!Brain_dir.exists())
         {
             Brain_dir.mkdirs();
@@ -123,6 +109,47 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         }
 
+        file = new File(Brain_dir, "Config.ini");
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+                Data.initConfig();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Error: " + e.toString(), Toast.LENGTH_LONG).show();
+            }
+        }
+        else
+        {
+            String config = Data.getConfig();
+            switch (config)
+            {
+                case "10 seconds":
+                    int_Time = 10000;
+                    delay_selection = 0;
+                    break;
+
+                case "20 seconds":
+                    int_Time = 20000;
+                    delay_selection = 1;
+                    break;
+
+                case "30 seconds":
+                    int_Time = 30000;
+                    delay_selection = 2;
+                    break;
+
+                case "Infinite":
+                    delay_selection = 3;
+                    bl_DelayForever = true;
+                    break;
+            }
+        }
+
         if (!History_dir.exists())
         {
             History_dir.mkdirs();
@@ -132,6 +159,30 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         {
             Thought_dir.mkdirs();
         }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setContentView(R.layout.activity_main);
+
+        Input = (EditText)findViewById(R.id.txt_Input);
+
+        Output = (EditText)findViewById(R.id.txt_Output);
+        Output.setMaxLines(Integer.MAX_VALUE);
+
+        btn_Enter = (Button)findViewById(R.id.btn_Enter);
+        btn_Menu = (Button)findViewById(R.id.btn_Menu);
+        sp_WordFix = (Spinner)findViewById(R.id.sp_WordFix);
+        sp_WordFix.setOnItemSelectedListener(this);
+        txt_WordFix = (EditText)findViewById(R.id.txt_WordFix);
+        btn_WordFix = (Button)findViewById(R.id.btn_WordFix);
+
+        handler = new Handler();
+
+        Create_Brain();
 
         Input.addTextChangedListener(new TextWatcher()
         {
@@ -150,20 +201,18 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if (Output.getText().toString().equals("(thinking...)"))
-                {
-                    Output.setText("");
-                }
-                bl_Typing = true;
-                Logic.Initiation = false;
-                stopTimer();
-                stopThinking();
-
                 if (Input.getText().toString().equals(""))
                 {
                     bl_Typing = false;
                     startTimer();
                     startThinking();
+                }
+                else
+                {
+                    bl_Typing = true;
+                    Logic.Initiation = false;
+                    stopTimer();
+                    stopThinking();
                 }
             }
         });
@@ -189,14 +238,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             else
             {
                 bl_Ready = true;
-                startTimer();
+                DisplayTips();
                 startThinking();
             }
         }
         else
         {
             bl_Ready = true;
-            startTimer();
+            DisplayTips();
             startThinking();
         }
     }
@@ -212,7 +261,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 {
                     // permission granted
                     bl_Ready = true;
-                    startTimer();
+                    DisplayTips();
                     startThinking();
                 }
                 else
@@ -245,6 +294,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                  bl_Delay)
         {
             CloseWordFix();
+        }
+        else if (bl_Tips)
+        {
+            CloseTips();
         }
         else
         {
@@ -363,6 +416,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         else if (bl_Thought)
         {
             CloseThought();
+        }
+        else if (bl_Tips)
+        {
+            CloseTips();
         }
         else if (bl_Ready)
         {
@@ -622,7 +679,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     @Override
     public void onPanelClosed(int featureId, Menu menu)
     {
-        if (!bl_Thought)
+        if (!bl_Thought && !bl_Tips)
         {
             if (!bl_WordFix && !bl_Delay)
             {
@@ -653,76 +710,29 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         switch (item.getItemId())
         {
-            case R.id.exit_app:
-                Acknowledge_Exit();
+            case R.id.tips:
+                DisplayTips();
                 return true;
-            case R.id.erase_memory:
-                Acknowledge_Erase();
-                return true;
+
             case R.id.thought_log:
                 stopTimer();
                 bl_Thought = true;
                 return true;
+
             case R.id.word_fix:
-                //Set Spinner
-                List<WordData> data = Data.getWords();
-                List<String> words = new ArrayList<>();
-                for (int i = 0; i < data.size(); i++)
-                {
-                    words.add(data.get(i).getWord());
-                }
-
-                if (words.size() > 0)
-                {
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, words);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    sp_WordFix.setAdapter(adapter);
-                    sp_WordFix.setSelection(0);
-                    sp_WordFix.setVisibility(View.VISIBLE);
-                    sp_WordFix.setClickable(true);
-                    sp_WordFix.setFocusable(true);
-
-                    //Set Input
-                    txt_WordFix.setText(words.get(wordfix_selection));
-                    txt_WordFix.setVisibility(View.VISIBLE);
-                    txt_WordFix.setClickable(true);
-                    txt_WordFix.setFocusableInTouchMode(true);
-                    txt_WordFix.setFocusable(true);
-                    txt_WordFix.requestFocus();
-
-                    //Set Button
-                    btn_WordFix.setVisibility(View.VISIBLE);
-                    btn_WordFix.setClickable(true);
-                    btn_WordFix.setFocusable(true);
-
-                    stopTimer();
-                    bl_WordFix = true;
-                }
+                DisplayWordFix();
                 return true;
 
             case R.id.setdelay:
-                //Set Spinner
-                List<String> delays = new ArrayList<>();
-                delays.add("10 seconds");
-                delays.add("20 seconds");
-                delays.add("30 seconds");
-                delays.add("Infinite");
+                DisplayDelay();
+                return true;
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, delays);
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                sp_WordFix.setAdapter(adapter);
-                sp_WordFix.setSelection(0);
-                sp_WordFix.setVisibility(View.VISIBLE);
-                sp_WordFix.setClickable(true);
-                sp_WordFix.setFocusable(true);
+            case R.id.erase_memory:
+                Acknowledge_Erase();
+                return true;
 
-                //Set Button
-                btn_WordFix.setVisibility(View.VISIBLE);
-                btn_WordFix.setClickable(true);
-                btn_WordFix.setFocusable(true);
-
-                stopTimer();
-                bl_Delay = true;
+            case R.id.exit_app:
+                Acknowledge_Exit();
                 return true;
 
             default:
@@ -939,6 +949,44 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
     }
 
+    private void DisplayWordFix()
+    {
+        //Set Spinner
+        List<WordData> data = Data.getWords();
+        List<String> words = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++)
+        {
+            words.add(data.get(i).getWord());
+        }
+
+        if (words.size() > 0)
+        {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, words);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            sp_WordFix.setAdapter(adapter);
+            sp_WordFix.setSelection(0);
+            sp_WordFix.setVisibility(View.VISIBLE);
+            sp_WordFix.setClickable(true);
+            sp_WordFix.setFocusable(true);
+
+            //Set Input
+            txt_WordFix.setText(words.get(wordfix_selection));
+            txt_WordFix.setVisibility(View.VISIBLE);
+            txt_WordFix.setClickable(true);
+            txt_WordFix.setFocusableInTouchMode(true);
+            txt_WordFix.setFocusable(true);
+            txt_WordFix.requestFocus();
+
+            //Set Button
+            btn_WordFix.setVisibility(View.VISIBLE);
+            btn_WordFix.setClickable(true);
+            btn_WordFix.setFocusable(true);
+
+            stopTimer();
+            bl_WordFix = true;
+        }
+    }
+
     public void WordFix(View view)
     {
         if (bl_WordFix)
@@ -1023,10 +1071,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         {
             if (delay_selection == 3)
             {
+                Data.setConfig("Infinite");
                 bl_DelayForever = true;
             }
             else
             {
+                Data.setConfig(((delay_selection * 10) + 10) + " seconds");
                 int_Time = ((delay_selection * 10) + 10) * 1000;
                 bl_DelayForever = false;
             }
@@ -1035,7 +1085,76 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         CloseWordFix();
     }
 
-    public void CloseWordFix()
+    private void DisplayDelay()
+    {
+        //Set Spinner
+        List<String> delays = new ArrayList<>();
+        delays.add("10 seconds");
+        delays.add("20 seconds");
+        delays.add("30 seconds");
+        delays.add("Infinite");
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, delays);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sp_WordFix.setAdapter(adapter);
+        sp_WordFix.setSelection(delay_selection);
+        sp_WordFix.setVisibility(View.VISIBLE);
+        sp_WordFix.setClickable(true);
+        sp_WordFix.setFocusable(true);
+
+        //Set Button
+        btn_WordFix.setVisibility(View.VISIBLE);
+        btn_WordFix.setClickable(true);
+        btn_WordFix.setFocusable(true);
+
+        stopTimer();
+        bl_Delay = true;
+    }
+
+    private void DisplayTips()
+    {
+        Input.setVisibility(View.INVISIBLE);
+        btn_Menu.setVisibility(View.INVISIBLE);
+        btn_Enter.setText(R.string.ok_button);
+        btn_Enter.setVisibility(View.VISIBLE);
+
+        String tips = "";
+        tips += "Here are some tips for teaching the AI: \n\n";
+
+        tips += "1. The AI learns from observing how you respond to what it says... " +
+                "so, if it says \"Hello.\" and you say \"How are you?\" it will learn that \"How are you?\" " +
+                "is a possible response to \"Hello.\". If you say something it has never seen before, it will " +
+                "repeat it to see how -you- would respond to it. Learning by imitation, like a young child, " +
+                "is not the only way it learns as you will soon discover.\n\n";
+
+        tips += "2. It will generate stuff that sounds nonsensical early on... this is part of the learning process, " +
+                "similar to the way children phrase things in ways that don't quite make sense early on. \n\n";
+
+        tips += "3. If it says something that doesn't make sense, don't respond to it... " +
+                "this will reduce the likelihood of it generating the statement/question in the future. " +
+                "This also means it's a bad idea to just leave the AI running for long periods of time " +
+                "without interacting with it, since it could eventually unlearn everything you taught it. \n\n";
+
+        tips += "4. The AI cannot see/hear/taste/smell/feel any 'things' you refer to, so it can never have any contextual " +
+                "understanding of what exactly the 'thing' is (the way you understand it). This also means it'll " +
+                "never understand you trying to reference it (or yourself) directly, as it can never have a concept of " +
+                "anything external being something different from it without spatial recognition gained from sight/touch/sound. \n\n";
+
+        tips += "5. Use complete sentences when responding. Start with a capital letter and end with a punctuation mark. \n\n";
+
+        tips += "6. Limit your responses to single sentences/questions. \n\n";
+
+        tips += "7. Avoid conjunctions. Use \"it is\" instead of \"it's\"). \n\n";
+
+        tips += "8. In general... keep it simple. The simpler you speak to it, the better it learns. \n\n";
+
+        Output.setText(tips);
+
+        stopTimer();
+        bl_Tips = true;
+    }
+
+    private void CloseWordFix()
     {
         //Set Spinner
         sp_WordFix.setVisibility(View.INVISIBLE);
@@ -1071,7 +1190,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         startTimer();
     }
 
-    public void CloseThought()
+    private void CloseThought()
     {
         Input.setVisibility(View.VISIBLE);
         btn_Menu.setVisibility(View.VISIBLE);
@@ -1085,6 +1204,24 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
         bl_Thought = false;
+
+        startTimer();
+    }
+
+    private void CloseTips()
+    {
+        Input.setVisibility(View.VISIBLE);
+        btn_Menu.setVisibility(View.VISIBLE);
+        btn_Enter.setText(R.string.enter_button);
+        btn_Enter.setVisibility(View.VISIBLE);
+
+        ScrollHistory();
+
+        Input.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+        bl_Tips = false;
 
         startTimer();
     }

@@ -14,6 +14,77 @@ import java.util.Locale;
 
 class Data
 {
+    //Config Data
+    static void initConfig()
+    {
+        BufferedWriter writer;
+        try
+        {
+            File file = new File(MainActivity.Brain_dir, "Config.ini");
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            writer.write("Delay:10 seconds");
+            writer.close();
+        }
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
+    static void setConfig(String delay)
+    {
+        BufferedWriter writer;
+        try
+        {
+            File file = new File(MainActivity.Brain_dir, "Config.ini");
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new FileWriter(file));
+            writer.write("Delay:" + delay);
+            writer.close();
+        }
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
+    static String getConfig()
+    {
+        String Config[];
+        String result = "";
+
+        File file = new File(MainActivity.Brain_dir, "Config.ini");
+
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                if (line.contains(":"))
+                {
+                    Config = line.split(":");
+                    result = Config[1];
+                }
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     //Words Data
     static void saveWords(List<WordData> data)
     {

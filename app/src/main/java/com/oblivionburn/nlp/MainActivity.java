@@ -38,6 +38,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -57,6 +58,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Button btn_WordFix = null;
     private Button btn_Enter = null;
     private Button btn_Menu = null;
+    private Button btn_Encourage = null;
+    private Button btn_Discourage = null;
+    private ImageView img_Face = null;
 
     private boolean bl_Typing = false;
     private boolean bl_Ready = false;
@@ -177,10 +181,16 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
         btn_Enter = (Button)findViewById(R.id.btn_Enter);
         btn_Menu = (Button)findViewById(R.id.btn_Menu);
+
         sp_WordFix = (Spinner)findViewById(R.id.sp_WordFix);
         sp_WordFix.setOnItemSelectedListener(this);
         txt_WordFix = (EditText)findViewById(R.id.txt_WordFix);
         btn_WordFix = (Button)findViewById(R.id.btn_WordFix);
+
+        btn_Encourage = (Button)findViewById(R.id.btn_Encourage);
+        btn_Discourage = (Button)findViewById(R.id.btn_Discourage);
+
+        img_Face = (ImageView)findViewById(R.id.img_Face);
 
         handler = new Handler();
 
@@ -444,6 +454,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
 
             ScrollHistory();
+            img_Face.setImageResource(R.drawable.face_neutral);
         }
     }
 
@@ -489,6 +500,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
                 Logic.ClearLeftovers();
                 Input.setText("");
+                img_Face.setImageResource(R.drawable.face_neutral);
             }
         }
     }
@@ -706,6 +718,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         Input.setVisibility(View.INVISIBLE);
         btn_Enter.setVisibility(View.INVISIBLE);
         btn_Menu.setVisibility(View.INVISIBLE);
+        btn_Encourage.setVisibility(View.INVISIBLE);
+        btn_Discourage.setVisibility(View.INVISIBLE);
+        img_Face.setVisibility(View.INVISIBLE);
 
         if (KeyboardOpen)
         {
@@ -731,6 +746,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
                 btn_Enter.setText(R.string.enter_button);
                 btn_Enter.setVisibility(View.VISIBLE);
+
+                btn_Encourage.setVisibility(View.VISIBLE);
+                btn_Discourage.setVisibility(View.VISIBLE);
+                img_Face.setVisibility(View.VISIBLE);
+                img_Face.setImageResource(R.drawable.face_neutral);
+
                 startTimer();
             }
             else
@@ -829,6 +850,140 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
 
             Data.saveInputList(input);
+        }
+    }
+
+    private void Encourage()
+    {
+        if (!Logic.last_response.equals(""))
+        {
+            if (Logic.last_response.contains("."))
+            {
+                String str = Logic.last_response;
+                StringBuilder sb = new StringBuilder(str).replace(Logic.last_response.indexOf("."), Logic.last_response.indexOf(".") + 1, " .");
+                Logic.last_response = sb.toString();
+            }
+            else if (Logic.last_response.contains("?"))
+            {
+                String str = Logic.last_response;
+                StringBuilder sb = new StringBuilder(str).replace(Logic.last_response.indexOf("?"), Logic.last_response.indexOf("?") + 1, " $");
+                Logic.last_response = sb.toString();
+            }
+            else if (Logic.last_response.contains("!"))
+            {
+                String str = Logic.last_response;
+                StringBuilder sb = new StringBuilder(str).replace(Logic.last_response.indexOf("!"), Logic.last_response.indexOf("!") + 1, " !");
+                Logic.last_response = sb.toString();
+            }
+
+            String[] WordArray = Logic.last_response.split(" ");
+            for (int i = 0; i < WordArray.length; i++)
+            {
+                switch (WordArray[i])
+                {
+                    case ",":
+                        WordArray[i] = " ,";
+                        break;
+                    case ";":
+                        WordArray[i] = " ;";
+                        break;
+                    case ":":
+                        WordArray[i] = "";
+                        break;
+                    case "?":
+                        WordArray[i] = " $";
+                        break;
+                    case "$":
+                        WordArray[i] = " $";
+                        break;
+                    case "!":
+                        WordArray[i] = " !";
+                        break;
+                    case ".":
+                        WordArray[i] = " .";
+                        break;
+                }
+            }
+
+            List<WordData> data;
+            List<String> words = new ArrayList<>();
+            List<Integer> frequencies = new ArrayList<>();
+
+            for (int pro = 0; pro < WordArray.length - 1; pro++)
+            {
+                data = Data.getProWords(WordArray[pro]);
+                words.clear();
+                frequencies.clear();
+
+                for (int i = 0; i < data.size(); i++)
+                {
+                    words.add(data.get(i).getWord());
+                    frequencies.add(data.get(i).getFrequency());
+                }
+
+                if (words.contains(WordArray[pro + 1]))
+                {
+                    int index = words.indexOf(WordArray[pro + 1]);
+
+                    if (frequencies.get(index) > 0)
+                    {
+                        frequencies.set(index, frequencies.get(index) + 1);
+                    }
+                    else if (frequencies.get(index) < 0)
+                    {
+                        frequencies.set(index, 0);
+                    }
+                }
+
+                data.clear();
+                for (int i = 0; i < data.size(); i++)
+                {
+                    WordData new_data = new WordData();
+                    new_data.setWord(words.get(i));
+                    new_data.setFrequency(frequencies.get(i));
+                    data.add(new_data);
+                }
+
+                Data.saveProWords(data, WordArray[pro]);
+            }
+
+            for (int pre = 1; pre < WordArray.length; pre++)
+            {
+                data = Data.getPreWords(WordArray[pre]);
+                words.clear();
+                frequencies.clear();
+
+                for (int i = 0; i < data.size(); i++)
+                {
+                    words.add(data.get(i).getWord());
+                    frequencies.add(data.get(i).getFrequency());
+                }
+
+                if (words.contains(WordArray[pre - 1]))
+                {
+                    int index = words.indexOf(WordArray[pre - 1]);
+
+                    if (frequencies.get(index) > 0)
+                    {
+                        frequencies.set(index, frequencies.get(index) + 1);
+                    }
+                    else if (frequencies.get(index) < 0)
+                    {
+                        frequencies.set(index, 0);
+                    }
+                }
+
+                data.clear();
+                for (int i = 0; i < data.size(); i++)
+                {
+                    WordData new_data = new WordData();
+                    new_data.setWord(words.get(i));
+                    new_data.setFrequency(frequencies.get(i));
+                    data.add(new_data);
+                }
+
+                Data.savePreWords(data, WordArray[pre]);
+            }
         }
     }
 
@@ -1159,6 +1314,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         btn_Menu.setVisibility(View.INVISIBLE);
         btn_Enter.setText(R.string.ok_button);
         btn_Enter.setVisibility(View.VISIBLE);
+        btn_Encourage.setVisibility(View.INVISIBLE);
+        btn_Discourage.setVisibility(View.INVISIBLE);
+        img_Face.setVisibility(View.INVISIBLE);
 
         String tips = "";
         tips += "Here are some tips for teaching the AI: \n\n";
@@ -1219,6 +1377,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         btn_Menu.setVisibility(View.VISIBLE);
         btn_Enter.setText(R.string.enter_button);
         btn_Enter.setVisibility(View.VISIBLE);
+        btn_Encourage.setVisibility(View.VISIBLE);
+        btn_Discourage.setVisibility(View.VISIBLE);
+        img_Face.setVisibility(View.VISIBLE);
+        img_Face.setImageResource(R.drawable.face_neutral);
 
         ScrollHistory();
 
@@ -1238,6 +1400,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         btn_Menu.setVisibility(View.VISIBLE);
         btn_Enter.setText(R.string.enter_button);
         btn_Enter.setVisibility(View.VISIBLE);
+        btn_Encourage.setVisibility(View.VISIBLE);
+        btn_Discourage.setVisibility(View.VISIBLE);
+        img_Face.setVisibility(View.VISIBLE);
+        img_Face.setImageResource(R.drawable.face_neutral);
 
         ScrollHistory();
 
@@ -1256,6 +1422,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         btn_Menu.setVisibility(View.VISIBLE);
         btn_Enter.setText(R.string.enter_button);
         btn_Enter.setVisibility(View.VISIBLE);
+        btn_Encourage.setVisibility(View.VISIBLE);
+        btn_Discourage.setVisibility(View.VISIBLE);
+        img_Face.setVisibility(View.VISIBLE);
+        img_Face.setImageResource(R.drawable.face_neutral);
 
         ScrollHistory();
 
@@ -1272,5 +1442,25 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float) 200, metrics);
+    }
+
+    public void Encourage(View view)
+    {
+        Encourage();
+        img_Face.setImageResource(R.drawable.face_encourage);
+    }
+
+    public void Discourage(View view)
+    {
+        CleanMemory();
+        Discourage();
+
+        List<String> history = Data.getHistory();
+        history.add("---New Session---");
+        Data.saveHistory(history);
+        ScrollHistory();
+
+        Logic.NewInput = false;
+        img_Face.setImageResource(R.drawable.face_discourage);
     }
 }

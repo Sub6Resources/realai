@@ -47,7 +47,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private int int_Time = 10000;
     private int int_Delay = 0;
     private int wordfix_selection = 0;
-    int delay_selection = 0;
+    private int delay_selection = 0;
+    private int ready = 0;
 
     private EditText Output = null;
     private EditText Input = null;
@@ -72,7 +73,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Handler handler;
     private boolean KeyboardOpen;
     private View rootView;
-    private final int PERMISSION_REQUEST = 123;
+    private final int WRITE_REQUEST = 123;
+    private final int ALERT_REQUEST = 456;
 
     private void Create_Brain()
     {
@@ -233,10 +235,25 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST);
             }
             else
             {
+                ready++;
+            }
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED)
+            {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW}, ALERT_REQUEST);
+            }
+            else
+            {
+                ready++;
+            }
+
+            if (ready == 2)
+            {
+                ready = 2;
                 bl_Ready = true;
                 DisplayTips();
                 startThinking();
@@ -244,6 +261,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
         else
         {
+            ready = 2;
             bl_Ready = true;
             DisplayTips();
             startThinking();
@@ -255,14 +273,38 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         switch (requestCode)
         {
-            case PERMISSION_REQUEST:
+            case WRITE_REQUEST:
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
                     // permission granted
-                    bl_Ready = true;
-                    DisplayTips();
-                    startThinking();
+                    ready++;
+                    if (ready == 2)
+                    {
+                        bl_Ready = true;
+                        DisplayTips();
+                        startThinking();
+                    }
+                }
+                else
+                {
+                    // permission denied
+                    onDestroy();
+                }
+            }
+
+            case ALERT_REQUEST:
+            {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    // permission granted
+                    ready++;
+                    if (ready == 2)
+                    {
+                        bl_Ready = true;
+                        DisplayTips();
+                        startThinking();
+                    }
                 }
                 else
                 {

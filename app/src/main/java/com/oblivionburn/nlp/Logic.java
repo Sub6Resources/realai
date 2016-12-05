@@ -600,7 +600,6 @@ class Logic
     private static String Get_RandomWord()
     {
         List<String> words = new ArrayList<>();
-        List<Integer> frequencies = new ArrayList<>();
         String lowest_word = "";
 
         List<WordData> data = Data.getWords();
@@ -608,7 +607,6 @@ class Logic
         for (int a = 0; a < data.size(); a++)
         {
             words.add(data.get(a).getWord());
-            frequencies.add(data.get(a).getFrequency());
         }
 
         if (words.size() > 0)

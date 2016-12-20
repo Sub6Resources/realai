@@ -24,7 +24,6 @@
         android:focusableInTouchMode="false"
         android:freezesText="false"
         android:inputType="textMultiLine"
-        android:linksClickable="false"
         android:longClickable="false"
         android:scrollHorizontally="false"
         android:scrollbarAlwaysDrawVerticalTrack="true"
@@ -32,8 +31,9 @@
         android:scrollbars="vertical"
         android:selectAllOnFocus="false"
         android:gravity="top"
-        android:layout_above="@+id/txt_Input">
-
+        android:layout_above="@+id/txt_Input"
+        android:linksClickable="true"
+        android:autoLink="web">
         <requestFocus />
     </EditText>
 

@@ -21,16 +21,19 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -69,6 +72,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private boolean bl_Delay = false;
     private boolean bl_DelayForever = false;
     private boolean bl_Tips = false;
+    private boolean bl_Encourage_Pressed = false;
+    private boolean bl_Discourage_Pressed = false;
 
     public static final File Brain_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/" );
     public static final File History_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Brain/History/" );
@@ -77,10 +82,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Handler handler;
     private boolean KeyboardOpen;
     private View rootView;
-    private final int WRITE_REQUEST = 123;
-    private final int ALERT_REQUEST = 456;
+    private final int PERMISSION_ALL = 1;
 
-    private void Create_Brain()
+    private void createBrain()
     {
         if (!Brain_dir.exists())
         {
@@ -194,8 +198,36 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
         handler = new Handler();
 
-        Create_Brain();
+        createBrain();
+        createListeners();
 
+        rootView = findViewById(android.R.id.content);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+        {
+            @Override
+            public void onGlobalLayout()
+            {
+                int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
+                KeyboardOpen = heightDiff > dpToPx(getApplicationContext());
+            }
+        });
+
+
+        String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW};
+        if(!hasPermissions(this, PERMISSIONS))
+        {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+        }
+        else
+        {
+            bl_Ready = true;
+            DisplayTips();
+            startThinking();
+        }
+    }
+
+    private void createListeners()
+    {
         Input.addTextChangedListener(new TextWatcher()
         {
             @Override
@@ -213,6 +245,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
+                img_Face.setImageResource(R.drawable.face_neutral);
+
                 if (Input.getText().toString().equals(""))
                 {
                     bl_Typing = false;
@@ -229,97 +263,111 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
-        rootView = findViewById(android.R.id.content);
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
+        btn_Encourage.setOnTouchListener(new OnTouchListener()
         {
-            @Override
-            public void onGlobalLayout()
+            private final Handler handler = new Handler();
+            private final Runnable runnable = new Runnable()
             {
-                int heightDiff = rootView.getRootView().getHeight() - rootView.getHeight();
-                KeyboardOpen = heightDiff > dpToPx(getApplicationContext());
+                public void run()
+                {
+                    if(!bl_Encourage_Pressed)
+                    {
+                        handler.removeCallbacks(runnable);
+                        img_Face.setImageResource(R.drawable.face_neutral);
+                    }
+                    else
+                    {
+                        bl_Encourage_Pressed = false;
+                        handler.postDelayed(runnable, 250);
+                    }
+                }
+            };
+
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if(event.getAction() == MotionEvent.ACTION_DOWN)
+                {
+                    img_Face.setImageResource(R.drawable.face_encourage);
+                    bl_Encourage_Pressed = true;
+                }
+
+                if(event.getAction() == MotionEvent.ACTION_UP)
+                {
+                    handler.postDelayed(runnable, 250);
+                }
+                return false;
             }
         });
 
-        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-        if (currentapiVersion > Build.VERSION_CODES.LOLLIPOP)
+        btn_Discourage.setOnTouchListener(new OnTouchListener()
         {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            private final Handler handler = new Handler();
+            private final Runnable runnable = new Runnable()
             {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST);
-            }
-            else
-            {
-                ready++;
-            }
+                public void run()
+                {
+                    if(!bl_Discourage_Pressed)
+                    {
+                        handler.removeCallbacks(runnable);
+                        img_Face.setImageResource(R.drawable.face_neutral);
+                    }
+                    else
+                    {
+                        bl_Discourage_Pressed = false;
+                        handler.postDelayed(runnable, 250);
+                    }
+                }
+            };
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED)
+            public boolean onTouch(View v, MotionEvent event)
             {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW}, ALERT_REQUEST);
-            }
-            else
-            {
-                ready++;
-            }
+                if(event.getAction() == MotionEvent.ACTION_DOWN)
+                {
+                    img_Face.setImageResource(R.drawable.face_discourage);
+                    bl_Discourage_Pressed = true;
+                }
 
-            if (ready == 2)
+                if(event.getAction() == MotionEvent.ACTION_UP)
+                {
+                    handler.postDelayed(runnable, 250);
+                }
+                return false;
+            }
+        });
+    }
+
+    private boolean hasPermissions(Context context, String[] permissions)
+    {
+        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP && context != null && permissions != null)
+        {
+            for (String permission : permissions)
             {
-                ready = 2;
-                bl_Ready = true;
-                DisplayTips();
-                startThinking();
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED)
+                {
+                    return false;
+                }
             }
         }
-        else
-        {
-            ready = 2;
-            bl_Ready = true;
-            DisplayTips();
-            startThinking();
-        }
+        return true;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
     {
-        switch (requestCode)
+        if (requestCode == PERMISSION_ALL)
         {
-            case WRITE_REQUEST:
+            if (grantResults.length > 0)
             {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                for (int i = 0; i < permissions.length; i++)
                 {
-                    // permission granted
-                    ready++;
-                    if (ready == 2)
+                    if (permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                        permissions[i].equals(Manifest.permission.SYSTEM_ALERT_WINDOW))
                     {
-                        bl_Ready = true;
-                        DisplayTips();
-                        startThinking();
+                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
+                        {
+                            onDestroy();
+                        }
                     }
-                }
-                else
-                {
-                    // permission denied
-                    onDestroy();
-                }
-            }
-
-            case ALERT_REQUEST:
-            {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    // permission granted
-                    ready++;
-                    if (ready == 2)
-                    {
-                        bl_Ready = true;
-                        DisplayTips();
-                        startThinking();
-                    }
-                }
-                else
-                {
-                    // permission denied
-                    onDestroy();
                 }
             }
         }
@@ -1330,24 +1378,37 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         tips += "2. It will generate stuff that sounds nonsensical early on... this is part of the learning process, " +
                 "similar to the way children phrase things in ways that don't quite make sense early on. \n\n";
 
-        tips += "3. If it says something that doesn't make sense, don't respond to it... " +
-                "this will reduce the likelihood of it generating the statement/question in the future. " +
-                "This also means it's a bad idea to just leave the AI running for long periods of time " +
-                "without interacting with it, since it could eventually unlearn everything you taught it. \n\n";
+        tips += "3. The AI runs in real-time and will try to initiate conversation on its own if idle for too long. " +
+                "To adjust how long it waits before assuming you're idle, or to make it never check for idleness, " +
+                "check out the Set Delay option in the Menu. \n\n";
 
-        tips += "4. The AI cannot see/hear/taste/smell/feel any 'things' you refer to, so it can never have any contextual " +
+        tips += "4. If it says something that doesn't make sense, there are two things you can do to reduce the likelihood " +
+                "of it generating the current phrase in the future: " +
+                "If the Delay time (how long before it assumes you're idle) is anything other than Infinite, " +
+                "wait for the duration of the delay and the AI will be Discouraged. Alternatively, in the case of the Delay " +
+                "being Infinite, you can manually Discourage the AI by pressing the Discourage button. Pressing the Discourage " +
+                "button will also reset the session so that whatever you say next WILL NOT be considered a response to what was " +
+                "last said. Warning: if the Delay is not Infinite, and the AI is left running for a long period of time without " +
+                "any interaction, it will eventually lose its mind and speak pure gibberish. \n\n";
+
+        tips += "5. In contrast to Discouraging the AI, there is a button to Encourage it... pressing said button will increase the " +
+                "likelihood of it generating the current phrase in the future. If you would like a more technical breakdown of how exactly " +
+                "this works, check here: http://realai.freeforums.net/thread/18/expect-ai?page=1&scrollTo=50 \n\n";
+
+        tips += "6. The AI cannot see/hear/taste/smell/feel any 'things' you refer to, so it can never have any contextual " +
                 "understanding of what exactly the 'thing' is (the way you understand it). This also means it'll " +
                 "never understand you trying to reference it (or yourself) directly, as it can never have a concept of " +
                 "anything external being something different from it without spatial recognition gained from sight/touch/sound. \n\n";
 
-        tips += "5. Use complete sentences when responding. Start with a capital letter and end with a punctuation mark. \n\n";
+        tips += "7. Use complete sentences when responding. Start with a capital letter and end with a punctuation mark. \n\n";
 
-        tips += "6. Limit your responses to single sentences/questions. \n\n";
+        tips += "8. Limit your responses to single sentences/questions. \n\n";
 
-        tips += "7. Avoid conjunctions. Use \"it is\" instead of \"it's\"). \n\n";
+        tips += "9. Avoid conjunctions (use \"it is\" instead of \"it's\"). \n\n";
 
-        tips += "8. In general... keep it simple. The simpler you speak to it, the better it learns. \n\n";
+        tips += "10. In general... keep it simple. The simpler you speak to it, the better it learns. \n\n";
 
+        Output.setMovementMethod(LinkMovementMethod.getInstance());
         Output.setText(tips);
 
         stopTimer();
@@ -1447,7 +1508,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     public void Encourage(View view)
     {
         Encourage();
-        img_Face.setImageResource(R.drawable.face_encourage);
     }
 
     public void Discourage(View view)
@@ -1461,6 +1521,5 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         ScrollHistory();
 
         Logic.NewInput = false;
-        img_Face.setImageResource(R.drawable.face_discourage);
     }
 }

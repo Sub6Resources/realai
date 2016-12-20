@@ -39,6 +39,7 @@ class Logic
     private static String[] prepInput_CreateWordArray(String input)
     {
         String[] wordArray;
+        String[] reserved = {"|", "\\", "*", "<", "\"", ":", ">"};
         String result = input;
 
         List<String> doc_chars = new ArrayList<>();
@@ -52,47 +53,57 @@ class Logic
 
         for (int i = 0; i < doc_chars.size(); i++)
         {
-            if (doc_chars.get(i).equals(","))
+            boolean okay = true;
+            for(String s : reserved)
             {
-                doc_chars.set(i, " ,");
-            }
-            else if (doc_chars.get(i).equals(";"))
-            {
-                doc_chars.set(i, " ;");
-            }
-            else if (doc_chars.get(i).equals(":"))
-            {
-                doc_chars.set(i, null);
-            }
-            else if (doc_chars.get(i).equals("?"))
-            {
-                doc_chars.set(i, " $");
-            }
-            else if (doc_chars.get(i).equals("$"))
-            {
-                doc_chars.set(i, " $");
-            }
-            else if (doc_chars.get(i).equals("!"))
-            {
-                doc_chars.set(i, " !");
-            }
-            else if (doc_chars.get(i).equals("."))
-            {
-                if (doc_chars.size() >= i + 2)
+                if (doc_chars.get(i).equals(s))
                 {
-                    if (doc_chars.get(i + 1).equals("."))
+                    okay = false;
+                    doc_chars.set(i, null);
+                    break;
+                }
+            }
+
+            if (okay)
+            {
+                if (doc_chars.get(i).equals(","))
+                {
+                    doc_chars.set(i, " ,");
+                }
+                else if (doc_chars.get(i).equals(";"))
+                {
+                    doc_chars.set(i, " ;");
+                }
+                else if (doc_chars.get(i).equals("?"))
+                {
+                    doc_chars.set(i, " $");
+                }
+                else if (doc_chars.get(i).equals("$"))
+                {
+                    doc_chars.set(i, " $");
+                }
+                else if (doc_chars.get(i).equals("!"))
+                {
+                    doc_chars.set(i, " !");
+                }
+                else if (doc_chars.get(i).equals("."))
+                {
+                    if (doc_chars.size() >= i + 2)
                     {
-                        doc_chars.set(i, " .");
-                        i = i + 2;
+                        if (doc_chars.get(i + 1).equals("."))
+                        {
+                            doc_chars.set(i, " .");
+                            i = i + 2;
+                        }
+                        else
+                        {
+                            doc_chars.set(i, " .");
+                        }
                     }
                     else
                     {
                         doc_chars.set(i, " .");
                     }
-                }
-                else
-                {
-                    doc_chars.set(i, " .");
                 }
             }
         }

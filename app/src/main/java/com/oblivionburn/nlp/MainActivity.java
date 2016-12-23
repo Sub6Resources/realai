@@ -13,16 +13,17 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
@@ -82,7 +83,8 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private Handler handler;
     private boolean KeyboardOpen;
     private View rootView;
-    private final int PERMISSION_ALL = 1;
+    private final int PERMISSION_STORAGE = 1;
+    private final int PERMISSION_OVERLAY = 2;
 
     private void createBrain()
     {
@@ -212,13 +214,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
-
-        String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.SYSTEM_ALERT_WINDOW};
-        if(!hasPermissions(this, PERMISSIONS))
-        {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
-        else
+        if(hasPermissions())
         {
             bl_Ready = true;
             DisplayTips();
@@ -336,39 +332,45 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         });
     }
 
-    private boolean hasPermissions(Context context, String[] permissions)
+    private boolean hasPermissions()
     {
-        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP && context != null && permissions != null)
+        boolean result = true;
+        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
         {
-            for (String permission : permissions)
+            if (!Settings.canDrawOverlays(this))
             {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED)
-                {
-                    return false;
-                }
+                result = false;
+                Toast.makeText(getApplicationContext(), "Missing required permission for Real AI (text): Draw over other apps.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, PERMISSION_OVERLAY);
+            }
+            else if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            {
+                result = false;
+                Toast.makeText(getApplicationContext(), "Missing required permission for Real AI (text): Write to storage.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, PERMISSION_STORAGE);
             }
         }
-        return true;
+
+        return result;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == PERMISSION_ALL)
+        if (requestCode == PERMISSION_STORAGE)
         {
-            if (grantResults.length > 0)
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             {
-                for (int i = 0; i < permissions.length; i++)
-                {
-                    if (permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-                        permissions[i].equals(Manifest.permission.SYSTEM_ALERT_WINDOW))
-                    {
-                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
-                        {
-                            onDestroy();
-                        }
-                    }
-                }
+                onDestroy();
+            }
+        }
+        else if (requestCode == PERMISSION_OVERLAY)
+        {
+            if (!Settings.canDrawOverlays(this))
+            {
+                onDestroy();
             }
         }
     }

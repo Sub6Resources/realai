@@ -9,8 +9,8 @@ android {
         applicationId "com.oblivionburn.nlp"
         minSdkVersion 10
         targetSdkVersion 25
-        versionCode 56
-        versionName "2.6"
+        versionCode 57
+        versionName "2.7"
     }
     buildTypes {
         release {
@@ -23,5 +23,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:appcompat-v7:25.1.0'
 }

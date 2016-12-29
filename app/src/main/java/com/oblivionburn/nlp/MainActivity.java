@@ -335,7 +335,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private boolean hasPermissions()
     {
         boolean result = true;
-        if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
             if (!Settings.canDrawOverlays(this))
             {

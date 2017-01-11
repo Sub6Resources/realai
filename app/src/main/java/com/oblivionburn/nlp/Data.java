@@ -206,8 +206,11 @@ class Data
                     if (line.contains("~"))
                     {
                         WordSet = line.split("~");
-                        words.add(WordSet[0]);
-                        frequencies.add(Integer.parseInt(WordSet[1]));
+                        if (!WordSet[1].equals(""))
+                        {
+                            words.add(WordSet[0]);
+                            frequencies.add(Integer.parseInt(WordSet[1]));
+                        }
                     }
                 }
                 for (int i = 0; i < words.size(); i++)
@@ -294,8 +297,11 @@ class Data
                     if (line.contains("~"))
                     {
                         WordSet = line.split("~");
-                        words.add(WordSet[0]);
-                        frequencies.add(Integer.parseInt(WordSet[1]));
+                        if (!WordSet[1].equals(""))
+                        {
+                            words.add(WordSet[0]);
+                            frequencies.add(Integer.parseInt(WordSet[1]));
+                        }
                     }
                 }
                 for (int i = 0; i < words.size(); i++)

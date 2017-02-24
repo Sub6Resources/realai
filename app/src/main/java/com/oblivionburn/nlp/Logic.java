@@ -14,7 +14,8 @@ class Logic
     static Boolean UserInput = false;
 
     static String last_response_thinking = "";
-    static Boolean NewInput_ForThinking = false;
+
+    static String topic = "";
 
     static String[] prepInput(String input)
     {
@@ -29,7 +30,6 @@ class Logic
                 prepInput_AddNewWords(wordArray);
                 prepInput_UpdatePreWords(wordArray);
                 prepInput_UpdateProWords(wordArray);
-                UserInput = false;
             }
         }
 
@@ -268,7 +268,11 @@ class Logic
 
         String lowest_word = Get_LowestFrequency(wordArray, initiation);
 
-        AddTopic(input, lowest_word);
+        if (UserInput)
+        {
+            AddTopic(input, lowest_word);
+            topic = lowest_word;
+        }
 
         if (NewInput)
         {
@@ -553,7 +557,15 @@ class Logic
 
         if (initiation)
         {
-            lowest_word = Get_RandomWord();
+            if (topic.length() > 0)
+            {
+                lowest_word = topic;
+            }
+            else
+            {
+                lowest_word = Get_RandomWord();
+                topic = lowest_word;
+            }
         }
         else
         {
@@ -776,7 +788,7 @@ class Logic
         String output;
         String response = "";
 
-        String lowest_word = Get_LowestFrequency(wordArray, NewInput_ForThinking);
+        String lowest_word = Get_LowestFrequency(wordArray, true);
 
         //Get topic
         if (lowest_word.length() > 0)

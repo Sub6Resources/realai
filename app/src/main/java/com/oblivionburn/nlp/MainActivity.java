@@ -444,7 +444,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         @Override
         public void run()
         {
-            Logic.NewInput_ForThinking = Logic.last_response_thinking.equals("");
+            Logic.UserInput = false;
 
             List<String> thoughts = Data.getThoughts();
             String[] wordArray = Logic.prepInput(Logic.last_response_thinking);
@@ -487,11 +487,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             if (Logic.NewInput)
             {
                 CleanMemory();
-                Discourage();
             }
 
             Logic.NewInput = false;
             Logic.Initiation = true;
+            Logic.UserInput = false;
+
             List<String> history = Data.getHistory();
             String[] wordArray = new String[0];
 
@@ -1384,17 +1385,12 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 "To adjust how long it waits before assuming you're idle, or to make it never check for idleness, " +
                 "check out the Set Delay option in the Menu. \n\n";
 
-        tips += "4. If it says something that doesn't make sense, there are two things you can do to reduce the likelihood " +
-                "of it generating the current phrase in the future: " +
-                "If the Delay time (how long before it assumes you're idle) is anything other than Infinite, " +
-                "wait for the duration of the delay and the AI will be Discouraged. Alternatively, in the case of the Delay " +
-                "being Infinite, you can manually Discourage the AI by pressing the Discourage button. Pressing the Discourage " +
-                "button will also reset the session so that whatever you say next WILL NOT be considered a response to what was " +
-                "last said. Warning: if the Delay is not Infinite, and the AI is left running for a long period of time without " +
-                "any interaction, it will eventually lose its mind and speak pure gibberish. \n\n";
+        tips += "4. If it says something that doesn't make sense, you can discourage the AI by pressing the Discourage button. " +
+                "This will also reset the session so that whatever you say next WILL NOT be considered a response to what was " +
+                "last said. \n\n";
 
-        tips += "5. In contrast to Discouraging the AI, there is a button to Encourage it... pressing said button will increase the " +
-                "likelihood of it generating the current phrase in the future. If you would like a more technical breakdown of how exactly " +
+        tips += "5. In contrast to Discouraging the AI, there is a button to Encourage it... pressing said button will let it know " +
+                "it has used words properly. If you would like a more technical breakdown of how exactly " +
                 "this works, check here: http://realai.freeforums.net/thread/18/expect-ai?page=1&scrollTo=50 \n\n";
 
         tips += "6. The AI cannot see/hear/taste/smell/feel any 'things' you refer to, so it can never have any contextual " +

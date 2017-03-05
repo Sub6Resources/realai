@@ -993,15 +993,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 if (words.contains(WordArray[pro + 1]))
                 {
                     int index = words.indexOf(WordArray[pro + 1]);
-
-                    if (frequencies.get(index) > 0)
-                    {
-                        frequencies.set(index, frequencies.get(index) + 1);
-                    }
-                    else if (frequencies.get(index) < 0)
-                    {
-                        frequencies.set(index, 0);
-                    }
+                    frequencies.set(index, frequencies.get(index) + 1);
                 }
 
                 data.clear();
@@ -1119,8 +1111,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 if (words.contains(WordArray[pro + 1]))
                 {
                     int index = words.indexOf(WordArray[pro + 1]);
-
-                    if (frequencies.get(index) > 0)
+                    if (frequencies.get(index) > 1)
                     {
                         frequencies.set(index, frequencies.get(index) - 1);
                     }
@@ -1153,14 +1144,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 if (words.contains(WordArray[pre - 1]))
                 {
                     int index = words.indexOf(WordArray[pre - 1]);
-
-                    if (frequencies.get(index) > 0)
+                    if (frequencies.get(index) > 1)
                     {
                         frequencies.set(index, frequencies.get(index) - 1);
-                    }
-                    else if (frequencies.get(index) < 0)
-                    {
-                        frequencies.set(index, 0);
                     }
                 }
 

@@ -136,11 +136,8 @@ class Data
                     if (!WordSet[1].equals(""))
                     {
                         int frequency = Integer.parseInt(WordSet[1]);
-                        if (frequency > 0)
-                        {
-                            words.add(WordSet[0]);
-                            frequencies.add(frequency);
-                        }
+                        words.add(WordSet[0]);
+                        frequencies.add(frequency);
                     }
                 }
             }
@@ -213,11 +210,8 @@ class Data
                         if (!WordSet[1].equals(""))
                         {
                             int frequency = Integer.parseInt(WordSet[1]);
-                            if (frequency > 0)
-                            {
-                                words.add(WordSet[0]);
-                                frequencies.add(frequency);
-                            }
+                            words.add(WordSet[0]);
+                            frequencies.add(frequency);
                         }
                     }
                 }
@@ -293,11 +287,8 @@ class Data
                         if (!WordSet[1].equals(""))
                         {
                             int frequency = Integer.parseInt(WordSet[1]);
-                            if (frequency > 0)
-                            {
-                                words.add(WordSet[0]);
-                                frequencies.add(frequency);
-                            }
+                            words.add(WordSet[0]);
+                            frequencies.add(frequency);
                         }
                     }
                 }

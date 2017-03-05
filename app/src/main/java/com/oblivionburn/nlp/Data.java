@@ -135,8 +135,12 @@ class Data
                     WordSet = line.split("~");
                     if (!WordSet[1].equals(""))
                     {
-                        words.add(WordSet[0]);
-                        frequencies.add(Integer.parseInt(WordSet[1]));
+                        int frequency = Integer.parseInt(WordSet[1]);
+                        if (frequency > 0)
+                        {
+                            words.add(WordSet[0]);
+                            frequencies.add(frequency);
+                        }
                     }
                 }
             }
@@ -208,11 +212,16 @@ class Data
                         WordSet = line.split("~");
                         if (!WordSet[1].equals(""))
                         {
-                            words.add(WordSet[0]);
-                            frequencies.add(Integer.parseInt(WordSet[1]));
+                            int frequency = Integer.parseInt(WordSet[1]);
+                            if (frequency > 0)
+                            {
+                                words.add(WordSet[0]);
+                                frequencies.add(frequency);
+                            }
                         }
                     }
                 }
+
                 for (int i = 0; i < words.size(); i++)
                 {
                     WordData newset = new WordData();
@@ -226,22 +235,6 @@ class Data
             catch (IOException e)
             {
                 e.printStackTrace();
-            }
-        }
-        else
-        {
-            BufferedWriter writer;
-            try
-            {
-                writer = new BufferedWriter(new FileWriter(file));
-                String WordsLine = "";
-                writer.write(WordsLine);
-                writer.newLine();
-                writer.close();
-            }
-            catch(IOException ex)
-            {
-                ex.printStackTrace();
             }
         }
 
@@ -299,8 +292,12 @@ class Data
                         WordSet = line.split("~");
                         if (!WordSet[1].equals(""))
                         {
-                            words.add(WordSet[0]);
-                            frequencies.add(Integer.parseInt(WordSet[1]));
+                            int frequency = Integer.parseInt(WordSet[1]);
+                            if (frequency > 0)
+                            {
+                                words.add(WordSet[0]);
+                                frequencies.add(frequency);
+                            }
                         }
                     }
                 }
@@ -316,22 +313,6 @@ class Data
             catch (IOException e)
             {
                 e.printStackTrace();
-            }
-        }
-        else
-        {
-            BufferedWriter writer;
-            try
-            {
-                writer = new BufferedWriter(new FileWriter(file));
-                String WordsLine = "";
-                writer.write(WordsLine);
-                writer.newLine();
-                writer.close();
-            }
-            catch(IOException ex)
-            {
-                ex.printStackTrace();
             }
         }
 

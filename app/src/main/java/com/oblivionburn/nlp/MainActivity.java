@@ -214,11 +214,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
-        if(hasPermissions())
+        if (hasPermissions())
         {
             bl_Ready = true;
             DisplayTips();
-            startThinking();
         }
     }
 
@@ -662,6 +661,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                         Output.setText("");
                         Input.setText("");
 
+                        Logic.last_response = "";
+                        Logic.last_response_thinking = "";
+                        Logic.topic = "";
+
                         if (!Brain_dir.exists())
                         {
                             Brain_dir.mkdirs();
@@ -780,6 +783,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
 
         stopTimer();
+        stopThinking();
 
         return super.onMenuOpened(featureId, menu);
     }
@@ -804,6 +808,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 img_Face.setImageResource(R.drawable.face_neutral);
 
                 startTimer();
+                startThinking();
             }
             else
             {
@@ -830,6 +835,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
             case R.id.thought_log:
                 stopTimer();
+                startThinking();
                 bl_Thought = true;
                 return true;
 
@@ -887,6 +893,18 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                         if (i > 0)
                         {
                             i--;
+                        }
+                    }
+                    else if (output.size() == 1)
+                    {
+                        if (output.get(0).contains("~"))
+                        {
+                            file.delete();
+                            input.remove(i);
+                            if (i > 0)
+                            {
+                                i--;
+                            }
                         }
                     }
                 }
@@ -987,7 +1005,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
 
                 data.clear();
-                for (int i = 0; i < data.size(); i++)
+                for (int i = 0; i < words.size(); i++)
                 {
                     WordData new_data = new WordData();
                     new_data.setWord(words.get(i));
@@ -1013,19 +1031,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 if (words.contains(WordArray[pre - 1]))
                 {
                     int index = words.indexOf(WordArray[pre - 1]);
-
-                    if (frequencies.get(index) > 0)
-                    {
-                        frequencies.set(index, frequencies.get(index) + 1);
-                    }
-                    else if (frequencies.get(index) < 0)
-                    {
-                        frequencies.set(index, 0);
-                    }
+                    frequencies.set(index, frequencies.get(index) + 1);
                 }
 
                 data.clear();
-                for (int i = 0; i < data.size(); i++)
+                for (int i = 0; i < words.size(); i++)
                 {
                     WordData new_data = new WordData();
                     new_data.setWord(words.get(i));
@@ -1114,14 +1124,10 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                     {
                         frequencies.set(index, frequencies.get(index) - 1);
                     }
-                    else if (frequencies.get(index) < 0)
-                    {
-                        frequencies.set(index, 0);
-                    }
                 }
 
                 data.clear();
-                for (int i = 0; i < data.size(); i++)
+                for (int i = 0; i < words.size(); i++)
                 {
                     WordData new_data = new WordData();
                     new_data.setWord(words.get(i));
@@ -1159,7 +1165,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 }
 
                 data.clear();
-                for (int i = 0; i < data.size(); i++)
+                for (int i = 0; i < words.size(); i++)
                 {
                     WordData new_data = new WordData();
                     new_data.setWord(words.get(i));
@@ -1495,6 +1501,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         bl_Tips = false;
 
         startTimer();
+        startThinking();
     }
 
     private static float dpToPx(Context context)

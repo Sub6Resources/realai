@@ -266,12 +266,13 @@ class Logic
         String output;
         String response = "";
 
-        String lowest_word = Get_LowestFrequency(wordArray, initiation);
+        String lowest_word = Get_LowestFrequency(wordArray, initiation).toLowerCase();
 
         if (UserInput)
         {
             AddTopic(input, lowest_word);
             topic = lowest_word;
+            last_response_thinking = input;
         }
 
         if (NewInput)
@@ -788,9 +789,14 @@ class Logic
         String output;
         String response = "";
 
-        String lowest_word = Get_LowestFrequency(wordArray, true);
-
         //Get topic
+        String lowest_word = Get_LowestFrequency(wordArray, false).toLowerCase();
+
+        if (lowest_word.length() <= 0)
+        {
+            lowest_word = Get_LowestFrequency(wordArray, true).toLowerCase();
+        }
+
         if (lowest_word.length() > 0)
         {
             Boolean bl_MatchFound = false;
@@ -831,7 +837,7 @@ class Logic
 
             if (response.equals(last_response_thinking))
             {
-                lowest_word = Get_LowestFrequency(wordArray, true);
+                lowest_word = Get_LowestFrequency(wordArray, true).toLowerCase();
                 response = GenerateResponse(lowest_word);
             }
 

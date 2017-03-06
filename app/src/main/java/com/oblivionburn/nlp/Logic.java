@@ -356,8 +356,12 @@ class Logic
 
                 for (int c = 0; c < data.size(); c++)
                 {
-                    words.add(data.get(c).getWord());
-                    frequencies.add(data.get(c).getFrequency());
+                    int frequency = data.get(c).getFrequency();
+                    if (frequency > 0)
+                    {
+                        words.add(data.get(c).getWord());
+                        frequencies.add(frequency);
+                    }
                 }
 
                 int_highest_f = GetMax(frequencies);
@@ -422,8 +426,12 @@ class Logic
 
                 for (int e = 0; e < data.size(); e++)
                 {
-                    words.add(data.get(e).getWord());
-                    frequencies.add(data.get(e).getFrequency());
+                    int frequency = data.get(e).getFrequency();
+                    if (frequency > 0)
+                    {
+                        words.add(data.get(e).getWord());
+                        frequencies.add(frequency);
+                    }
                 }
 
                 int_highest_f = GetMax(frequencies);

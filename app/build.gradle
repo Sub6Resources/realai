@@ -9,8 +9,8 @@ android {
         applicationId "com.oblivionburn.nlp"
         minSdkVersion 10
         targetSdkVersion 25
-        versionCode 64
-        versionName "2.9"
+        versionCode 65
+        versionName "3.0"
     }
     buildTypes {
         release {

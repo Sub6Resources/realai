@@ -364,49 +364,56 @@ class Logic
                     }
                 }
 
-                int_highest_f = GetMax(frequencies);
-                List<Integer> RandomOnes = new ArrayList<>();
-                for (int b = 0; b < frequencies.size(); b++)
+                if (frequencies.size() > 0)
                 {
-                    if (frequencies.get(b) == int_highest_f)
+                    int_highest_f = GetMax(frequencies);
+                    List<Integer> RandomOnes = new ArrayList<>();
+                    for (int b = 0; b < frequencies.size(); b++)
                     {
-                        RandomOnes.add(b);
+                        if (frequencies.get(b) == int_highest_f)
+                        {
+                            RandomOnes.add(b);
+                        }
+                    }
+                    random = new Random();
+                    int int_choice2 = random.nextInt(RandomOnes.size());
+                    current_pre_word = words.get(RandomOnes.get(int_choice2));
+
+                    if (current_pre_word.length() > 1)
+                    {
+                        StringBuilder sb = new StringBuilder(current_pre_word).delete(1, current_pre_word.length() - 1);
+                        char first_letter = sb.charAt(0);
+                        if (Character.isUpperCase(first_letter))
+                        {
+                            String str2 = response;
+                            StringBuilder sb2 = new StringBuilder(str2).insert(0, current_pre_word + " ");
+                            response = sb2.toString();
+                            break;
+                        }
+                    }
+
+                    checker2 = response.split(" ");
+                    for (String check2 : checker2)
+                    {
+                        String check = check2;
+                        check = PunctuationFix_ForInput(check);
+                        if (check.equals(current_pre_word))
+                        {
+                            words_found = false;
+                            break;
+                        }
+                    }
+
+                    if (words_found)
+                    {
+                        String str = response;
+                        StringBuilder sb = new StringBuilder(str).insert(0, current_pre_word + " ");
+                        response = sb.toString();
                     }
                 }
-                random = new Random();
-                int int_choice2 = random.nextInt(RandomOnes.size());
-                current_pre_word = words.get(RandomOnes.get(int_choice2));
-
-                if (current_pre_word.length() > 1)
+                else
                 {
-                    StringBuilder sb = new StringBuilder(current_pre_word).delete(1, current_pre_word.length() - 1);
-                    char first_letter = sb.charAt(0);
-                    if (Character.isUpperCase(first_letter))
-                    {
-                        String str2 = response;
-                        StringBuilder sb2 = new StringBuilder(str2).insert(0, current_pre_word + " ");
-                        response = sb2.toString();
-                        break;
-                    }
-                }
-
-                checker2 = response.split(" ");
-                for (String check2 : checker2)
-                {
-                    String check = check2;
-                    check = PunctuationFix_ForInput(check);
-                    if (check.equals(current_pre_word))
-                    {
-                        words_found = false;
-                        break;
-                    }
-                }
-
-                if (words_found)
-                {
-                    String str = response;
-                    StringBuilder sb = new StringBuilder(str).insert(0, current_pre_word + " ");
-                    response = sb.toString();
+                    words_found = false;
                 }
             }
             else
@@ -434,48 +441,55 @@ class Logic
                     }
                 }
 
-                int_highest_f = GetMax(frequencies);
-                List<Integer> RandomOnes = new ArrayList<>();
-                for (int b = 0; b < frequencies.size(); b++)
+                if (frequencies.size() > 0)
                 {
-                    if (frequencies.get(b) == int_highest_f)
+                    int_highest_f = GetMax(frequencies);
+                    List<Integer> RandomOnes = new ArrayList<>();
+                    for (int b = 0; b < frequencies.size(); b++)
                     {
-                        RandomOnes.add(b);
-                    }
-                }
-                random = new Random();
-                int int_choice2 = random.nextInt(RandomOnes.size());
-                current_pro_word = words.get(RandomOnes.get(int_choice2));
-
-                if (repeater_check.length() > 0)
-                {
-                    checker = repeater_check.split(" ");
-                    for (String check1 : checker)
-                    {
-                        String check = check1;
-                        check = PunctuationFix_ForInput(check);
-                        if (check.equals(current_pro_word))
+                        if (frequencies.get(b) == int_highest_f)
                         {
-                            words_found = false;
+                            RandomOnes.add(b);
+                        }
+                    }
+                    random = new Random();
+                    int int_choice2 = random.nextInt(RandomOnes.size());
+                    current_pro_word = words.get(RandomOnes.get(int_choice2));
+
+                    if (repeater_check.length() > 0)
+                    {
+                        checker = repeater_check.split(" ");
+                        for (String check1 : checker)
+                        {
+                            String check = check1;
+                            check = PunctuationFix_ForInput(check);
+                            if (check.equals(current_pro_word))
+                            {
+                                words_found = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (words_found)
+                    {
+                        String str = response;
+                        StringBuilder sb = new StringBuilder(str).insert(response.length(), " " + current_pro_word);
+                        response = sb.toString();
+
+                        String str2 = repeater_check;
+                        StringBuilder sb2 = new StringBuilder(str2).insert(repeater_check.length(), current_pro_word + " ");
+                        repeater_check = sb2.toString();
+
+                        if (current_pro_word.equals(".") || current_pro_word.equals("$") || current_pro_word.equals("!"))
+                        {
                             break;
                         }
                     }
                 }
-
-                if (words_found)
+                else
                 {
-                    String str = response;
-                    StringBuilder sb = new StringBuilder(str).insert(response.length(), " " + current_pro_word);
-                    response = sb.toString();
-
-                    String str2 = repeater_check;
-                    StringBuilder sb2 = new StringBuilder(str2).insert(repeater_check.length(), current_pro_word + " ");
-                    repeater_check = sb2.toString();
-
-                    if (current_pro_word.equals(".") || current_pro_word.equals("$") || current_pro_word.equals("!"))
-                    {
-                        break;
-                    }
+                    words_found = false;
                 }
             }
             else

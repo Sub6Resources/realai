@@ -21,12 +21,10 @@ class Data
         try
         {
             File file = new File(MainActivity.Brain_dir, "Config.ini");
-            if (!file.exists())
-            {
-                file.createNewFile();
-            }
             writer = new BufferedWriter(new FileWriter(file));
             writer.write("Delay:10 seconds");
+            writer.newLine();
+            writer.write("Advanced:Off");
             writer.close();
         }
         catch(IOException ex)
@@ -35,7 +33,7 @@ class Data
         }
     }
 
-    static void setConfig(String delay)
+    static void setConfig(String delay, String advanced)
     {
         BufferedWriter writer;
         try
@@ -47,6 +45,8 @@ class Data
             }
             writer = new BufferedWriter(new FileWriter(file));
             writer.write("Delay:" + delay);
+            writer.newLine();
+            writer.write("Advanced:" + advanced);
             writer.close();
         }
         catch(IOException ex)
@@ -55,7 +55,7 @@ class Data
         }
     }
 
-    static String getConfig()
+    static String getDelay()
     {
         String Config[];
         String result = "";
@@ -69,7 +69,37 @@ class Data
             String line;
             while ((line = br.readLine()) != null)
             {
-                if (line.contains(":"))
+                if (line.contains("Delay:"))
+                {
+                    Config = line.split(":");
+                    result = Config[1];
+                }
+            }
+            br.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    static String getAdvanced()
+    {
+        String Config[];
+        String result = "";
+
+        File file = new File(MainActivity.Brain_dir, "Config.ini");
+
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                if (line.contains("Advanced:"))
                 {
                     Config = line.split(":");
                     result = Config[1];

@@ -13,10 +13,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,6 +27,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,6 +35,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -44,6 +44,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemSelectedListener
@@ -138,7 +139,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
         else
         {
-            String config = Data.getConfig();
+            String config = Data.getDelay();
             switch (config)
             {
                 case "10 seconds":
@@ -159,6 +160,18 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 case "Infinite":
                     delay_selection = 3;
                     bl_DelayForever = true;
+                    break;
+            }
+
+            String advanced = Data.getAdvanced();
+            switch (advanced)
+            {
+                case "Off":
+                    Logic.Advanced = false;
+                    break;
+
+                case "On":
+                    Logic.Advanced = true;
                     break;
             }
         }
@@ -263,6 +276,19 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
+        Input.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+            {
+                if (actionId == EditorInfo.IME_ACTION_DONE)
+                {
+                    onSend(v);
+                }
+                return true;
+            }
+        });
+
         btn_Encourage.setOnTouchListener(new OnTouchListener()
         {
             private final Handler handler = new Handler();
@@ -345,38 +371,15 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             {
                 result = false;
                 Toast.makeText(getApplicationContext(), "Missing required permission for Real AI (text): Draw over other apps.", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, PERMISSION_OVERLAY);
             }
             else if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             {
                 result = false;
                 Toast.makeText(getApplicationContext(), "Missing required permission for Real AI (text): Write to storage.", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, PERMISSION_STORAGE);
             }
         }
 
         return result;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == PERMISSION_STORAGE)
-        {
-            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            {
-                //onDestroy();
-            }
-        }
-        else if (requestCode == PERMISSION_OVERLAY)
-        {
-            if (!Settings.canDrawOverlays(this))
-            {
-                //onDestroy();
-            }
-        }
     }
 
     @Override
@@ -504,7 +507,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             List<String> history = Data.getHistory();
             String[] wordArray = new String[0];
 
-            String output = Logic.Respond(wordArray, "", Logic.Initiation);
+            String output = Logic.Respond(wordArray, "");
 
             if (!output.equals(""))
             {
@@ -550,7 +553,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 input = Logic.HistoryRules(input);
                 history.add("User: " + input);
 
-                String output = Logic.Respond(wordArray, input, Logic.Initiation);
+                String output = Logic.Respond(wordArray, input);
 
                 if (!output.equals(""))
                 {
@@ -770,6 +773,18 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
+
+        if (Logic.Advanced)
+        {
+            MenuItem advanced = menu.findItem(R.id.advanced);
+            advanced.setTitle("Advanced Mode: On");
+        }
+        else
+        {
+            MenuItem advanced = menu.findItem(R.id.advanced);
+            advanced.setTitle("Advanced Mode: Off");
+        }
+
         return true;
     }
 
@@ -864,12 +879,48 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 Acknowledge_Erase();
                 return true;
 
+            case R.id.advanced:
+                ToggleAdvanced(item);
+                return true;
+
             case R.id.exit_app:
                 Acknowledge_Exit();
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void ToggleAdvanced(MenuItem item)
+    {
+        if (Logic.Advanced)
+        {
+            Logic.Advanced = false;
+            item.setTitle("Advanced Mode: Off");
+
+            if (bl_DelayForever)
+            {
+                Data.setConfig("Infinite", "Off");
+            }
+            else
+            {
+                Data.setConfig((int_Time / 1000) + " seconds", "Off");
+            }
+        }
+        else
+        {
+            Logic.Advanced = true;
+            item.setTitle("Advanced Mode: On");
+
+            if (bl_DelayForever)
+            {
+                Data.setConfig("Infinite", "On");
+            }
+            else
+            {
+                Data.setConfig((int_Time / 1000) + " seconds", "On");
+            }
         }
     }
 
@@ -1324,12 +1375,28 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         {
             if (delay_selection == 3)
             {
-                Data.setConfig("Infinite");
+                if (Logic.Advanced)
+                {
+                    Data.setConfig("Infinite", "On");
+                }
+                else
+                {
+                    Data.setConfig("Infinite", "Off");
+                }
+
                 bl_DelayForever = true;
             }
             else
             {
-                Data.setConfig(((delay_selection * 10) + 10) + " seconds");
+                if (Logic.Advanced)
+                {
+                    Data.setConfig(((delay_selection * 10) + 10) + " seconds", "On");
+                }
+                else
+                {
+                    Data.setConfig(((delay_selection * 10) + 10) + " seconds", "Off");
+                }
+
                 int_Time = ((delay_selection * 10) + 10) * 1000;
                 bl_DelayForever = false;
             }

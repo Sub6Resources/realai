@@ -12,6 +12,7 @@ class Logic
     static Boolean Initiation = false;
     static Boolean NewInput = false;
     static Boolean UserInput = false;
+    static Boolean Advanced = false;
 
     static String last_response_thinking = "";
 
@@ -261,12 +262,12 @@ class Logic
         }
     }
 
-    static String Respond(String[] wordArray, String input, Boolean initiation)
+    static String Respond(String[] wordArray, String input)
     {
         String output;
         String response = "";
 
-        String lowest_word = Get_LowestFrequency(wordArray, initiation).toLowerCase();
+        String lowest_word = Get_LowestFrequency(wordArray, Initiation).toLowerCase();
 
         if (UserInput)
         {
@@ -284,36 +285,43 @@ class Logic
         {
             Boolean bl_MatchFound = false;
 
-            //Check for existing responses to phrases using the topic
-            List<String> info = Data.pullInfo(lowest_word);
-            if (info.size() > 0)
+            if (Advanced)
             {
-                //If some found, pick one at random
-                Random rand = new Random();
-                int int_random_choice = rand.nextInt(info.size());
-                response = info.get(int_random_choice);
-                bl_MatchFound = true;
+                response = GenerateResponse(lowest_word);
             }
-
-            //If none found, check for conditioned responses
-            if (!bl_MatchFound)
+            else
             {
-                String temp_input = PunctuationFix_ForInput(input);
-                List<String> outputList = Data.getOutputList_NoTopics(temp_input);
-                if (outputList.size() > 0)
+                //Check for existing responses to phrases using the topic
+                List<String> info = Data.pullInfo(lowest_word);
+                if (info.size() > 0)
                 {
                     //If some found, pick one at random
                     Random rand = new Random();
-                    int int_random_choice = rand.nextInt(outputList.size());
-                    response = outputList.get(int_random_choice);
+                    int int_random_choice = rand.nextInt(info.size());
+                    response = info.get(int_random_choice);
                     bl_MatchFound = true;
                 }
-            }
 
-            //If none found, procedurally generate a response using the topic
-            if (!bl_MatchFound)
-            {
-                response = GenerateResponse(lowest_word);
+                //If none found, check for conditioned responses
+                if (!bl_MatchFound)
+                {
+                    String temp_input = PunctuationFix_ForInput(input);
+                    List<String> outputList = Data.getOutputList_NoTopics(temp_input);
+                    if (outputList.size() > 0)
+                    {
+                        //If some found, pick one at random
+                        Random rand = new Random();
+                        int int_random_choice = rand.nextInt(outputList.size());
+                        response = outputList.get(int_random_choice);
+                        bl_MatchFound = true;
+                    }
+                }
+
+                //If none found, procedurally generate a response using the topic
+                if (!bl_MatchFound)
+                {
+                    response = GenerateResponse(lowest_word);
+                }
             }
 
             response = RulesCheck(response);

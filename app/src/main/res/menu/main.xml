@@ -4,5 +4,6 @@
     <item android:id="@+id/word_fix" android:orderInCategory="3" android:title="@string/word_fix"/>
     <item android:id="@+id/setdelay" android:orderInCategory="4" android:title="@string/setdelay"/>
     <item android:id="@+id/erase_memory" android:orderInCategory="5" android:title="@string/erase_memory"/>
-    <item android:id="@+id/exit_app" android:orderInCategory="6" android:title="@string/exit_app"/>
+    <item android:id="@+id/advanced" android:orderInCategory="6" android:title="@string/advanced_off"/>
+    <item android:id="@+id/exit_app" android:orderInCategory="7" android:title="@string/exit_app"/>
 </menu>

@@ -939,7 +939,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener
     private void CleanMemory()
     {
         List<String> input = Data.getInputList();
-
         if (input.size() > 0)
         {
             for (int i = 0; i < input.size(); i++)
@@ -983,6 +982,24 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             }
 
             Data.saveInputList(input);
+        }
+
+        File[] files = Brain_dir.listFiles();
+        int count = files.length;
+        for (int i = 0; i < count; i++)
+        {
+            String MemoryCheck = files[i].getName();
+            int index = MemoryCheck.lastIndexOf('.');
+            if (index > 0)
+            {
+                MemoryCheck = MemoryCheck.substring(0, index);
+
+                List<String> output = Data.getOutputList(MemoryCheck);
+                if (output.size() == 0)
+                {
+                    files[i].delete();
+                }
+            }
         }
     }
 

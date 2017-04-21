@@ -288,6 +288,12 @@ class Logic
             if (Advanced)
             {
                 response = GenerateResponse(lowest_word);
+
+                //If nothing could be generated with the topic, change topic
+                if (Initiation && response.equals(lowest_word))
+                {
+                    topic = "";
+                }
             }
             else
             {
@@ -321,6 +327,12 @@ class Logic
                 if (!bl_MatchFound)
                 {
                     response = GenerateResponse(lowest_word);
+
+                    //If nothing could be generated with the topic, change topic
+                    if (Initiation && response.equals(lowest_word))
+                    {
+                        topic = "";
+                    }
                 }
             }
 

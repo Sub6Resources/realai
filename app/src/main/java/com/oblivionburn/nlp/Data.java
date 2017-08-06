@@ -531,7 +531,7 @@ class Data
                     if (line.contains("#"))
                     {
                         int index = line.indexOf("~");
-                        result.add(line.substring(1, index - 1));
+                        result.add(line.substring(1, index));
                     }
                 }
                 br.close();
@@ -701,7 +701,7 @@ class Data
         return thoughts;
     }
 
-    static List<String> pullInfo(String topic)
+    static List<String> pullInfo(List<String> topics)
     {
         List<String> input = getInputList();
         List<String> info = new ArrayList<>();
@@ -710,18 +710,26 @@ class Data
         {
             for (int a = 0; a < input.size(); a++)
             {
+                int count = 0;
+
                 List<String> TopicList = getTopics(input.get(a));
                 for (String result : TopicList)
                 {
-                    if (result.equals(topic))
+                    for (int i = 0; i < topics.size(); i++)
                     {
-                        List<String> output = getOutputList_NoTopics(input.get(a));
-                        for (int b = 0; b < output.size(); b++)
+                        if (result.equals(topics.get(i)))
                         {
-                            info.add(output.get(b));
+                            count++;
                         }
+                    }
+                }
 
-                        break;
+                if (count >= topics.size())
+                {
+                    List<String> output = getOutputList_NoTopics(input.get(a));
+                    for (int b = 0; b < output.size(); b++)
+                    {
+                        info.add(output.get(b));
                     }
                 }
             }

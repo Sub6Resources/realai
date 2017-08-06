@@ -16,7 +16,8 @@ class Logic
 
     static String last_response_thinking = "";
 
-    static String topic = "";
+    static List<String> topics = new ArrayList<>();
+    private static List<String> topics_thinking = new ArrayList<>();
 
     static String[] prepInput(String input)
     {
@@ -55,12 +56,13 @@ class Logic
         for (int i = 0; i < doc_chars.size(); i++)
         {
             boolean okay = true;
-            for(String s : reserved)
+            for (String s : reserved)
             {
                 if (doc_chars.get(i).equals(s))
                 {
                     okay = false;
-                    doc_chars.set(i, null);
+                    doc_chars.remove(i);
+                    i--;
                     break;
                 }
             }
@@ -267,12 +269,10 @@ class Logic
         String output;
         String response = "";
 
-        String lowest_word = Get_LowestFrequency(wordArray, Initiation).toLowerCase();
-
         if (UserInput)
         {
-            AddTopic(input, lowest_word);
-            topic = lowest_word;
+            GenTopics(wordArray);
+            AddTopics(input);
             last_response_thinking = input;
         }
 
@@ -281,24 +281,26 @@ class Logic
             UpdateOutputList(input);
         }
 
-        if (lowest_word.length() > 0)
+        if (topics.size() > 0)
         {
             Boolean bl_MatchFound = false;
 
             if (Advanced)
             {
-                response = GenerateResponse(lowest_word);
+                Random rand = new Random();
+                int int_random_choice = rand.nextInt(topics.size());
+                response = GenerateResponse(topics.get(int_random_choice));
 
                 //If nothing could be generated with the topic, change topic
-                if (Initiation && response.equals(lowest_word))
+                if (Initiation && response.equals(topics.get(int_random_choice)))
                 {
-                    topic = "";
+                    topics.clear();
                 }
             }
             else
             {
-                //Check for existing responses to phrases using the topic
-                List<String> info = Data.pullInfo(lowest_word);
+                //Check for existing responses to phrases using the topics
+                List<String> info = Data.pullInfo(topics);
                 if (info.size() > 0)
                 {
                     //If some found, pick one at random
@@ -326,12 +328,14 @@ class Logic
                 //If none found, procedurally generate a response using the topic
                 if (!bl_MatchFound)
                 {
-                    response = GenerateResponse(lowest_word);
+                    Random rand = new Random();
+                    int int_random_choice = rand.nextInt(topics.size());
+                    response = GenerateResponse(topics.get(int_random_choice));
 
                     //If nothing could be generated with the topic, change topic
-                    if (Initiation && response.equals(lowest_word))
+                    if (Initiation && response.equals(topics.get(int_random_choice)))
                     {
-                        topic = "";
+                        topics.clear();
                     }
                 }
             }
@@ -563,7 +567,67 @@ class Logic
         }
     }
 
-    private static void AddTopic(String input, String lowest_word)
+    private static void GenTopics(String[] wordArray)
+    {
+        List<String> lowest_words = Get_LowestFrequencies(wordArray);
+
+        //Get new topics, but keep existing ones if found in input
+        List<String> old_topics = new ArrayList<>();
+        for (String topic : topics)
+        {
+            old_topics.add(topic);
+        }
+
+        topics.clear();
+        for (String word : lowest_words)
+        {
+            topics.add(word);
+        }
+
+        for (String topic : old_topics)
+        {
+            for (String word : wordArray)
+            {
+                if (word.equals(topic))
+                {
+                    topics.add(topic);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void GenTopics_ForThinking(String[] wordArray)
+    {
+        List<String> lowest_words = Get_LowestFrequencies(wordArray);
+
+        //Get new topics, but keep existing ones if found in input
+        List<String> old_topics = new ArrayList<>();
+        for (String topic : topics_thinking)
+        {
+            old_topics.add(topic);
+        }
+
+        topics_thinking.clear();
+        for (String word : lowest_words)
+        {
+            topics_thinking.add(word);
+        }
+
+        for (String topic : old_topics)
+        {
+            for (String word : wordArray)
+            {
+                if (word.equals(topic))
+                {
+                    topics_thinking.add(topic);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void AddTopics(String input)
     {
         String temp_input = input;
 
@@ -573,8 +637,8 @@ class Logic
         }
 
         //Add lowest frequency word to current input's output list
-        boolean found = false;
         List<String> output = Data.getOutputList(temp_input);
+
         if (output.size() > 0)
         {
             for (int i = 0; i < output.size(); i++)
@@ -582,13 +646,19 @@ class Logic
                 if (output.get(i).contains("#"))
                 {
                     String[] topic = output.get(i).split("~");
-                    if (topic[0].equals("#" + lowest_word.toLowerCase()))
+
+                    boolean match = false;
+                    for (String word : topics)
                     {
-                        found = true;
-                        int num = Integer.parseInt(topic[1]) + 1;
-                        topic[1] = Integer.toString(num);
+                        if (topic[0].equals("#" + word.toLowerCase()))
+                        {
+                            match = true;
+                            int num = Integer.parseInt(topic[1]) + 1;
+                            topic[1] = Integer.toString(num);
+                        }
                     }
-                    else
+
+                    if (!match)
                     {
                         int num = Integer.parseInt(topic[1]);
                         if (num - 1 > 0)
@@ -610,90 +680,91 @@ class Logic
                     i--;
                 }
             }
+
+            Data.saveOutput(output, temp_input);
         }
 
-        if (!found)
+        output = Data.getOutputList(temp_input);
+        for (String word : topics)
         {
-            if (!(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,") || lowest_word.equals("")))
+            boolean found = false;
+
+            for (int i = 0; i < output.size(); i++)
             {
-                output.add(0, "#" + lowest_word + "~7");
-                Data.saveOutput(output, temp_input);
+                if (output.get(i).contains("#"))
+                {
+                    String[] topic = output.get(i).split("~");
+                    if (topic[0].equals("#" + word.toLowerCase()))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found)
+            {
+                if (!(word.equals(" .") || word.equals(" $") || word.equals(" !") || word.equals(" ,") || word.equals("")))
+                {
+                    output.add(0, "#" + word + "~7");
+                }
             }
         }
+        Data.saveOutput(output, temp_input);
     }
 
-    private static String Get_LowestFrequency(String[] wordArray, Boolean initiation)
+    private static List<String> Get_LowestFrequencies(String[] wordArray)
     {
+        int int_lowest_f;
+        List<String> lowest_words = new ArrayList<>();
+
         List<String> words = new ArrayList<>();
         List<Integer> frequencies = new ArrayList<>();
-        int int_lowest_f;
-        String lowest_word = "";
 
         List<WordData> data = Data.getWords();
 
-        if (initiation)
+        if (wordArray != null)
         {
-            if (topic.length() > 0)
+            for (String word : wordArray)
             {
-                lowest_word = topic;
-            }
-            else
-            {
-                lowest_word = Get_RandomWord();
-                topic = lowest_word;
-            }
-        }
-        else
-        {
-            if (wordArray != null)
-            {
-                for (String word : wordArray)
+                for (int a2 = 0; a2 < data.size(); a2++)
                 {
-                    for (int a2 = 0; a2 < data.size(); a2++)
+                    if (data.get(a2).getWord().equals(word))
                     {
-                        if (data.get(a2).getWord().equals(word))
-                        {
-                            words.add(data.get(a2).getWord());
-                            frequencies.add(data.get(a2).getFrequency());
-                        }
-                    }
-                }
-            }
-
-            if (frequencies.size() > 0)
-            {
-                int_lowest_f = GetMin(frequencies);
-                List<Integer> RandomOnes = new ArrayList<>();
-                for (int b = 0; b < frequencies.size(); b++)
-                {
-                    if (frequencies.get(b) == int_lowest_f)
-                    {
-                        RandomOnes.add(b);
-                    }
-                }
-
-                Boolean bl_accepted;
-                for (int i = 0; i < RandomOnes.size(); i++)
-                {
-                    Random random = new Random();
-                    int int_choice = random.nextInt(RandomOnes.size());
-                    lowest_word = words.get(RandomOnes.get(int_choice));
-
-                    bl_accepted = !(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,"));
-
-                    if (bl_accepted)
-                    {
-                        break;
-                    }
-                    else if (i == RandomOnes.size() - 1)
-                    {
-                        lowest_word = Get_RandomWord();
+                        words.add(data.get(a2).getWord());
+                        frequencies.add(data.get(a2).getFrequency());
                     }
                 }
             }
         }
 
-        return lowest_word;
+        if (frequencies.size() > 0)
+        {
+            int_lowest_f = GetMin(frequencies);
+            List<Integer> RandomOnes = new ArrayList<>();
+            for (int b = 0; b < frequencies.size(); b++)
+            {
+                if (frequencies.get(b) == int_lowest_f)
+                {
+                    RandomOnes.add(b);
+                }
+            }
+
+            Boolean bl_accepted;
+            for (int i = 0; i < RandomOnes.size(); i++)
+            {
+                String word = words.get(RandomOnes.get(i)).toLowerCase();
+
+                bl_accepted = !(word.equals(" .") || word.equals(" $") || word.equals(" !") || word.equals(" ,"));
+
+                if (bl_accepted && !lowest_words.contains(word))
+                {
+                    lowest_words.add(word);
+                }
+            }
+        }
+
+        return lowest_words;
     }
 
     private static String Get_RandomWord()
@@ -721,6 +792,7 @@ class Logic
 
                 if (bl_accepted)
                 {
+                    lowest_word = lowest_word.toLowerCase();
                     break;
                 }
             }
@@ -861,23 +933,16 @@ class Logic
 
     static String Think(String[] wordArray)
     {
-        String output;
         String response = "";
 
-        //Get topic
-        String lowest_word = Get_LowestFrequency(wordArray, false).toLowerCase();
+        GenTopics_ForThinking(wordArray);
 
-        if (lowest_word.length() <= 0)
-        {
-            lowest_word = Get_LowestFrequency(wordArray, true).toLowerCase();
-        }
-
-        if (lowest_word.length() > 0)
+        if (topics_thinking.size() > 0)
         {
             Boolean bl_MatchFound = false;
 
             //Check for existing responses to phrases using the topics
-            List<String> info = Data.pullInfo(lowest_word);
+            List<String> info = Data.pullInfo(topics_thinking);
             if (info.size() > 0)
             {
                 //If some found, pick one at random
@@ -905,25 +970,26 @@ class Logic
             //If none found, procedurally generate a response using the topic
             if (!bl_MatchFound)
             {
-                response = GenerateResponse(lowest_word);
+                Random rand = new Random();
+                int int_random_choice = rand.nextInt(topics_thinking.size());
+                response = GenerateResponse(topics_thinking.get(int_random_choice));
+
+                //If nothing could be generated with the topic, change topic
+                if (RulesCheck(response).equals(last_response_thinking))
+                {
+                    response = GenerateResponse(Get_RandomWord());
+                }
             }
 
             response = RulesCheck(response);
-
-            if (response.equals(last_response_thinking))
-            {
-                lowest_word = Get_LowestFrequency(wordArray, true).toLowerCase();
-                response = GenerateResponse(lowest_word);
-            }
-
-            output = response;
         }
         else
         {
-            output = "";
+            response = GenerateResponse(Get_RandomWord());
+            response = RulesCheck(response);
         }
 
-        return output;
+        return response;
     }
 
     static void ClearLeftovers()

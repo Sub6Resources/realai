@@ -49,7 +49,6 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemSelectedListener
 {
-    //Variables
     private int int_Time = 10000;
     private int int_Delay = 0;
     private int wordfix_selection = 0;
@@ -679,7 +678,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
                         Logic.last_response = "";
                         Logic.last_response_thinking = "";
-                        Logic.topic = "";
+                        Logic.topics.clear();
 
                         if (!Brain_dir.exists())
                         {
@@ -985,10 +984,9 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
 
         File[] files = Brain_dir.listFiles();
-        int count = files.length;
-        for (int i = 0; i < count; i++)
+        for (File file : files)
         {
-            String MemoryCheck = files[i].getName();
+            String MemoryCheck = file.getName();
             int index = MemoryCheck.lastIndexOf('.');
             if (index > 0)
             {
@@ -997,7 +995,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
                 List<String> output = Data.getOutputList(MemoryCheck);
                 if (output.size() == 0)
                 {
-                    files[i].delete();
+                    file.delete();
                 }
             }
         }

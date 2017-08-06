@@ -573,19 +573,52 @@ class Logic
         }
 
         //Add lowest frequency word to current input's output list
+        boolean found = false;
         List<String> output = Data.getOutputList(temp_input);
         if (output.size() > 0)
         {
-            if (output.get(0).contains("~"))
+            for (int i = 0; i < output.size(); i++)
             {
-                output.remove(0);
+                if (output.get(i).contains("#"))
+                {
+                    String[] topic = output.get(i).split("~");
+                    if (topic[0].equals("#" + lowest_word.toLowerCase()))
+                    {
+                        found = true;
+                        int num = Integer.parseInt(topic[1]) + 1;
+                        topic[1] = Integer.toString(num);
+                    }
+                    else
+                    {
+                        int num = Integer.parseInt(topic[1]);
+                        if (num - 1 > 0)
+                        {
+                            num--;
+                            topic[1] = Integer.toString(num);
+                            output.set(i, topic[0] + "~" + topic[1]);
+                        }
+                        else
+                        {
+                            output.remove(i);
+                            i--;
+                        }
+                    }
+                }
+                else if (output.get(i).contains("~"))
+                {
+                    output.remove(i);
+                    i--;
+                }
             }
         }
 
-        if (!(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,") || lowest_word.equals("")))
+        if (!found)
         {
-            output.add(0, "~" + lowest_word);
-            Data.saveOutput(output, temp_input);
+            if (!(lowest_word.equals(" .") || lowest_word.equals(" $") || lowest_word.equals(" !") || lowest_word.equals(" ,") || lowest_word.equals("")))
+            {
+                output.add(0, "#" + lowest_word + "~7");
+                Data.saveOutput(output, temp_input);
+            }
         }
     }
 
@@ -843,7 +876,7 @@ class Logic
         {
             Boolean bl_MatchFound = false;
 
-            //Check for existing responses to phrases using the topic
+            //Check for existing responses to phrases using the topics
             List<String> info = Data.pullInfo(lowest_word);
             if (info.size() > 0)
             {

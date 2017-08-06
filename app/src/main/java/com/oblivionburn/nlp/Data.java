@@ -481,7 +481,7 @@ class Data
                 String line;
                 while ((line = br.readLine()) != null)
                 {
-                    if (!line.equals("") && !line.contains("~"))
+                    if (!line.equals("") && !line.contains("#"))
                     {
                         output.add(line);
                     }
@@ -513,9 +513,9 @@ class Data
         return output;
     }
 
-    private static String getTopic(String input)
+    private static List<String> getTopics(String input)
     {
-        String result = "";
+        List<String> result = new ArrayList<>();
 
         File file = new File(MainActivity.Brain_dir, input + ".txt");
 
@@ -528,9 +528,10 @@ class Data
                 String line;
                 while ((line = br.readLine()) != null)
                 {
-                    if (line.contains("~"))
+                    if (line.contains("#"))
                     {
-                        result = line.substring(1, line.length());
+                        int index = line.indexOf("~");
+                        result.add(line.substring(1, index - 1));
                     }
                 }
                 br.close();
@@ -709,13 +710,18 @@ class Data
         {
             for (int a = 0; a < input.size(); a++)
             {
-                String result = getTopic(input.get(a));
-                if (result.equals(topic))
+                List<String> TopicList = getTopics(input.get(a));
+                for (String result : TopicList)
                 {
-                    List<String> output = getOutputList_NoTopics(input.get(a));
-                    for (int b = 0; b < output.size(); b++)
+                    if (result.equals(topic))
                     {
-                        info.add(output.get(b));
+                        List<String> output = getOutputList_NoTopics(input.get(a));
+                        for (int b = 0; b < output.size(); b++)
+                        {
+                            info.add(output.get(b));
+                        }
+
+                        break;
                     }
                 }
             }
@@ -724,7 +730,7 @@ class Data
         return info;
     }
 
-    static boolean tryParseInt(String value)
+    private static boolean tryParseInt(String value)
     {
         try
         {

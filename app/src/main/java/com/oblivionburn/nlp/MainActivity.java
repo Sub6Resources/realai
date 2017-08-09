@@ -984,18 +984,21 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
 
         File[] files = Brain_dir.listFiles();
-        for (File file : files)
+        if (files != null)
         {
-            String MemoryCheck = file.getName();
-            int index = MemoryCheck.lastIndexOf('.');
-            if (index > 0)
+            for (File file : files)
             {
-                MemoryCheck = MemoryCheck.substring(0, index);
-
-                List<String> output = Data.getOutputList(MemoryCheck);
-                if (output.size() == 0)
+                String MemoryCheck = file.getName();
+                int index = MemoryCheck.lastIndexOf('.');
+                if (index > 0)
                 {
-                    file.delete();
+                    MemoryCheck = MemoryCheck.substring(0, index);
+
+                    List<String> output = Data.getOutputList(MemoryCheck);
+                    if (output.size() == 0)
+                    {
+                        file.delete();
+                    }
                 }
             }
         }
@@ -1289,6 +1292,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             sp_WordFix.setFocusable(true);
 
             //Set Input
+            if (wordfix_selection > words.size() - 1)
+            {
+                wordfix_selection = words.size() - 1;
+            }
+
             txt_WordFix.setText(words.get(wordfix_selection));
             txt_WordFix.setVisibility(View.VISIBLE);
             txt_WordFix.setClickable(true);

@@ -599,29 +599,32 @@ class Logic
 
     private static void GenTopics_ForThinking(String[] wordArray)
     {
-        List<String> lowest_words = Get_LowestFrequencies(wordArray);
-
-        //Get new topics, but keep existing ones if found in input
-        List<String> old_topics = new ArrayList<>();
-        for (String topic : topics_thinking)
+        if (wordArray != null)
         {
-            old_topics.add(topic);
-        }
+            List<String> lowest_words = Get_LowestFrequencies(wordArray);
 
-        topics_thinking.clear();
-        for (String word : lowest_words)
-        {
-            topics_thinking.add(word);
-        }
-
-        for (String topic : old_topics)
-        {
-            for (String word : wordArray)
+            //Get new topics, but keep existing ones if found in input
+            List<String> old_topics = new ArrayList<>();
+            for (String topic : topics_thinking)
             {
-                if (word.equals(topic))
+                old_topics.add(topic);
+            }
+
+            topics_thinking.clear();
+            for (String word : lowest_words)
+            {
+                topics_thinking.add(word);
+            }
+
+            for (String topic : old_topics)
+            {
+                for (String word : wordArray)
                 {
-                    topics_thinking.add(topic);
-                    break;
+                    if (word.equals(topic))
+                    {
+                        topics_thinking.add(topic);
+                        break;
+                    }
                 }
             }
         }

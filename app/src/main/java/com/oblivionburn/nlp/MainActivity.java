@@ -49,7 +49,6 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemSelectedListener
 {
-    //Variables
     private int int_Time = 10000;
     private int int_Delay = 0;
     private int wordfix_selection = 0;
@@ -679,7 +678,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener
 
                         Logic.last_response = "";
                         Logic.last_response_thinking = "";
-                        Logic.topic = "";
+                        Logic.topics.clear();
 
                         if (!Brain_dir.exists())
                         {
@@ -985,19 +984,21 @@ public class MainActivity extends Activity implements OnItemSelectedListener
         }
 
         File[] files = Brain_dir.listFiles();
-        int count = files.length;
-        for (int i = 0; i < count; i++)
+        if (files != null)
         {
-            String MemoryCheck = files[i].getName();
-            int index = MemoryCheck.lastIndexOf('.');
-            if (index > 0)
+            for (File file : files)
             {
-                MemoryCheck = MemoryCheck.substring(0, index);
-
-                List<String> output = Data.getOutputList(MemoryCheck);
-                if (output.size() == 0)
+                String MemoryCheck = file.getName();
+                int index = MemoryCheck.lastIndexOf('.');
+                if (index > 0)
                 {
-                    files[i].delete();
+                    MemoryCheck = MemoryCheck.substring(0, index);
+
+                    List<String> output = Data.getOutputList(MemoryCheck);
+                    if (output.size() == 0)
+                    {
+                        file.delete();
+                    }
                 }
             }
         }
@@ -1291,6 +1292,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener
             sp_WordFix.setFocusable(true);
 
             //Set Input
+            if (wordfix_selection > words.size() - 1)
+            {
+                wordfix_selection = words.size() - 1;
+            }
+
             txt_WordFix.setText(words.get(wordfix_selection));
             txt_WordFix.setVisibility(View.VISIBLE);
             txt_WordFix.setClickable(true);

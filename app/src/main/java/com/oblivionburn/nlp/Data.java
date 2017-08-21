@@ -493,27 +493,42 @@ class Data
                 e.printStackTrace();
             }
         }
-        else
+
+        return output;
+    }
+
+    static List<String> getOutputList_OnlyTopics(String input)
+    {
+        List<String> output = new ArrayList<>();
+
+        File file = new File(MainActivity.Brain_dir, input + ".txt");
+
+        if (file.isFile())
         {
-            BufferedWriter writer;
             try
             {
-                writer = new BufferedWriter(new FileWriter(file));
-                String WordsLine = "";
-                writer.write(WordsLine);
-                writer.newLine();
-                writer.close();
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("#"))
+                    {
+                        output.add(line);
+                    }
+                }
+                br.close();
             }
-            catch(IOException ex)
+            catch (IOException e)
             {
-                ex.printStackTrace();
+                e.printStackTrace();
             }
         }
 
         return output;
     }
 
-    private static List<String> getTopics(String input)
+    static List<String> getTopics(String input)
     {
         List<String> result = new ArrayList<>();
 
@@ -699,43 +714,6 @@ class Data
         }
 
         return thoughts;
-    }
-
-    static List<String> pullInfo(List<String> topics)
-    {
-        List<String> input = getInputList();
-        List<String> info = new ArrayList<>();
-
-        if (input.size() > 0)
-        {
-            for (int a = 0; a < input.size(); a++)
-            {
-                int count = 0;
-
-                List<String> TopicList = getTopics(input.get(a));
-                for (String result : TopicList)
-                {
-                    for (int i = 0; i < topics.size(); i++)
-                    {
-                        if (result.equals(topics.get(i)))
-                        {
-                            count++;
-                        }
-                    }
-                }
-
-                if (count >= topics.size())
-                {
-                    List<String> output = getOutputList_NoTopics(input.get(a));
-                    for (int b = 0; b < output.size(); b++)
-                    {
-                        info.add(output.get(b));
-                    }
-                }
-            }
-        }
-
-        return info;
     }
 
     private static boolean tryParseInt(String value)

@@ -300,7 +300,7 @@ class Logic
             else
             {
                 //Check for existing responses to phrases using the topics
-                List<String> info = Data.pullInfo(topics);
+                List<String> info = Get_Related(topics);
                 if (info.size() > 0)
                 {
                     //If some found, pick one at random
@@ -716,6 +716,100 @@ class Logic
         Data.saveOutput(output, temp_input);
     }
 
+    private static List<String> Get_Related(List<String> topics)
+    {
+        List<String> OutputList = new ArrayList<>();
+        List<String> InputList = new ArrayList<>();
+
+        List<String> input = Data.getInputList();
+        if (input.size() > 0)
+        {
+            //Get everything with matching topics
+            for (int a = 0; a < input.size(); a++)
+            {
+                int count = 0;
+
+                List<String> list = Data.getTopics(input.get(a));
+                for (String result : list)
+                {
+                    for (int i = 0; i < topics.size(); i++)
+                    {
+                        if (result.equals(topics.get(i)))
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                if (count >= topics.size())
+                {
+                    InputList.add(input.get(a));
+                }
+            }
+
+            if (InputList.size() > 0)
+            {
+                //Get highest matching topic frequency
+                List<Integer> frequencies = new ArrayList<>();
+                for (String result : InputList)
+                {
+                    List<String> output_topics = Data.getOutputList_OnlyTopics(result);
+                    for (int i = 0; i < output_topics.size(); i++)
+                    {
+                        String[] topic = output_topics.get(i).split("~");
+                        for (int t = 0; t < topics.size(); t++)
+                        {
+                            if (topic[0].equals("#" + topics.get(t)))
+                            {
+                                frequencies.add(Integer.parseInt(topic[1]));
+                            }
+                        }
+                    }
+                }
+
+                int max = GetMax(frequencies);
+                if (max > 0)
+                {
+                    //Return whatever has a matching topic with the max frequency
+                    for (String result : InputList)
+                    {
+                        List<String> output_topics = Data.getOutputList_OnlyTopics(result);
+                        for (int i = 0; i < output_topics.size(); i++)
+                        {
+                            boolean found = false;
+
+                            String[] topic = output_topics.get(i).split("~");
+                            int num = Integer.parseInt(topic[1]);
+
+                            for (int t = 0; t < topics.size(); t++)
+                            {
+                                if (topic[0].equals("#" + topics.get(t)) && num == max)
+                                {
+                                    found = true;
+
+                                    List<String> output = Data.getOutputList_NoTopics(result);
+                                    for (int b = 0; b < output.size(); b++)
+                                    {
+                                        OutputList.add(output.get(b));
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            if (found)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return OutputList;
+    }
+
     private static List<String> Get_LowestFrequencies(String[] wordArray)
     {
         int int_lowest_f;
@@ -945,7 +1039,7 @@ class Logic
             Boolean bl_MatchFound = false;
 
             //Check for existing responses to phrases using the topics
-            List<String> info = Data.pullInfo(topics_thinking);
+            List<String> info = Get_Related(topics_thinking);
             if (info.size() > 0)
             {
                 //If some found, pick one at random

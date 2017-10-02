@@ -1091,19 +1091,19 @@ class Logic
 
     static void ClearLeftovers()
     {
-        File file = new File(MainActivity.Brain_dir, ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), ".txt");
         if (file.exists())
         {
             file.delete();
         }
 
-        file = new File(MainActivity.Brain_dir, ",.txt");
+        file = new File(MainActivity.Companion.getBrain_dir(), ",.txt");
         if (file.exists())
         {
             file.delete();
         }
 
-        file = new File(MainActivity.Brain_dir, "..txt");
+        file = new File(MainActivity.Companion.getBrain_dir(), "..txt");
         if (file.exists())
         {
             file.delete();

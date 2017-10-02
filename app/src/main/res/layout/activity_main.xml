@@ -37,18 +37,6 @@
         <requestFocus />
     </EditText>
 
-    <Button
-        android:id="@+id/btn_Menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btn_Enter"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/txt_Input"
-        android:onClick="onMenu"
-        android:text="@string/menu_button"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true" />
-
     <EditText
         android:id="@+id/txt_WordFix"
         android:layout_width="wrap_content"
@@ -106,13 +94,13 @@
         android:text="@string/encourage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_Menu"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
         android:id="@+id/btn_Encourage"
-        android:layout_toEndOf="@+id/btn_WordFix"
+        android:onClick="Encourage"
+        android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/btn_WordFix"
-        android:onClick="Encourage" />
+        android:layout_toEndOf="@+id/btn_WordFix"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:id="@+id/txt_Input"
@@ -131,12 +119,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn_Discourage"
-        android:layout_above="@+id/btn_Menu"
+        android:onClick="Discourage"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toLeftOf="@+id/btn_WordFix"
-        android:layout_toStartOf="@+id/btn_WordFix"
-        android:onClick="Discourage" />
+        android:layout_toStartOf="@+id/btn_WordFix" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -147,6 +135,6 @@
         android:id="@+id/img_Face"
         android:layout_toLeftOf="@+id/btn_Encourage"
         android:layout_toStartOf="@+id/btn_Encourage"
-        android:layout_above="@+id/btn_Menu" />
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

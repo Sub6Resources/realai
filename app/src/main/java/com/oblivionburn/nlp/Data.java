@@ -20,7 +20,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "Config.ini");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "Config.ini");
             writer = new BufferedWriter(new FileWriter(file));
             writer.write("Delay:10 seconds");
             writer.newLine();
@@ -38,7 +38,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "Config.ini");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "Config.ini");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -60,7 +60,7 @@ class Data
         String Config[];
         String result = "";
 
-        File file = new File(MainActivity.Brain_dir, "Config.ini");
+        File file = new File(MainActivity.Companion.getBrain_dir(), "Config.ini");
 
         try
         {
@@ -90,7 +90,7 @@ class Data
         String Config[];
         String result = "";
 
-        File file = new File(MainActivity.Brain_dir, "Config.ini");
+        File file = new File(MainActivity.Companion.getBrain_dir(), "Config.ini");
 
         try
         {
@@ -121,7 +121,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "Words.txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "Words.txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -151,7 +151,7 @@ class Data
 
         String WordSet[];
 
-        File file = new File(MainActivity.Brain_dir, "Words.txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), "Words.txt");
 
         try
         {
@@ -194,7 +194,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "Pre-" + word + ".txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -223,7 +223,7 @@ class Data
         List<WordData> data = new ArrayList<>();
 
         String WordSet[];
-        File file = new File(MainActivity.Brain_dir, "Pre-" + word + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), "Pre-" + word + ".txt");
 
         if (file.isFile())
         {
@@ -271,7 +271,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "Pro-" + word + ".txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -300,7 +300,7 @@ class Data
         List<WordData> data = new ArrayList<>();
 
         String WordSet[];
-        File file = new File(MainActivity.Brain_dir, "Pro-" + word + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), "Pro-" + word + ".txt");
 
         if (file.isFile())
         {
@@ -346,7 +346,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, "InputList.txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "InputList.txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -372,7 +372,7 @@ class Data
 
         try
         {
-            File file = new File(MainActivity.Brain_dir, "InputList.txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), "InputList.txt");
             BufferedReader br = new BufferedReader(new FileReader(file));
 
             String line;
@@ -399,7 +399,7 @@ class Data
         BufferedWriter writer;
         try
         {
-            File file = new File(MainActivity.Brain_dir, input + ".txt");
+            File file = new File(MainActivity.Companion.getBrain_dir(), input + ".txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -423,7 +423,7 @@ class Data
     {
         List<String> output = new ArrayList<>();
 
-        File file = new File(MainActivity.Brain_dir, input + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), input + ".txt");
 
         if (file.isFile())
         {
@@ -470,7 +470,7 @@ class Data
     {
         List<String> output = new ArrayList<>();
 
-        File file = new File(MainActivity.Brain_dir, input + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), input + ".txt");
 
         if (file.isFile())
         {
@@ -501,7 +501,7 @@ class Data
     {
         List<String> output = new ArrayList<>();
 
-        File file = new File(MainActivity.Brain_dir, input + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), input + ".txt");
 
         if (file.isFile())
         {
@@ -532,7 +532,7 @@ class Data
     {
         List<String> result = new ArrayList<>();
 
-        File file = new File(MainActivity.Brain_dir, input + ".txt");
+        File file = new File(MainActivity.Companion.getBrain_dir(), input + ".txt");
 
         if (file.isFile())
         {
@@ -569,7 +569,7 @@ class Data
 
         try
         {
-            File file = new File(MainActivity.History_dir, currentDate + ".txt");
+            File file = new File(MainActivity.Companion.getHistory_dir(), currentDate + ".txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -595,7 +595,7 @@ class Data
 
         DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
         String currentDate = f.format(new Date());
-        File file = new File(MainActivity.History_dir, currentDate + ".txt");
+        File file = new File(MainActivity.Companion.getHistory_dir(), currentDate + ".txt");
 
         if (file.isFile())
         {
@@ -647,7 +647,7 @@ class Data
 
         try
         {
-            File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
+            File file = new File(MainActivity.Companion.getThought_dir(), currentDate + ".txt");
             if (!file.exists())
             {
                 file.createNewFile();
@@ -673,7 +673,7 @@ class Data
 
         DateFormat f = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
         String currentDate = f.format(new Date());
-        File file = new File(MainActivity.Thought_dir, currentDate + ".txt");
+        File file = new File(MainActivity.Companion.getThought_dir(), currentDate + ".txt");
 
         if (file.isFile())
         {
